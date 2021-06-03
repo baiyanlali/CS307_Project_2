@@ -107,3 +107,8 @@ create table pre_courses(
     foreign key (pre_course_id) references course(course_id)
 );
 
+
+
+
+
+
