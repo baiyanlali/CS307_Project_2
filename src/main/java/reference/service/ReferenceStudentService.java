@@ -1,5 +1,6 @@
 package reference.service;
 
+import cn.edu.sustech.cs307.database.SQLDataSource;
 import cn.edu.sustech.cs307.dto.Course;
 import cn.edu.sustech.cs307.dto.CourseSearchEntry;
 import cn.edu.sustech.cs307.dto.CourseTable;
@@ -8,7 +9,7 @@ import cn.edu.sustech.cs307.dto.grade.Grade;
 import cn.edu.sustech.cs307.service.StudentService;
 
 import javax.annotation.Nullable;
-import java.sql.Date;
+import java.sql.*;
 import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,14 @@ public class ReferenceStudentService implements StudentService {
 
     @Override
     public void dropCourse(int studentId, int sectionId) throws IllegalStateException {
-
+        try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
+             PreparedStatement stmt = connection.prepareStatement("call drop_course(?, ?)")) {
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, sectionId);
+            stmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
