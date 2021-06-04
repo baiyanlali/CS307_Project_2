@@ -12,7 +12,6 @@ public class CourseServiceTest {
     public static void main(String[] args) {
 
         CourseService cs=new ReferenceCourseService();
-<<<<<<< HEAD
         cs.removeCourse("MIAO101");
         cs.addCourse("MIAO101","猫猫学导论",5,32, Course.CourseGrading.PASS_OR_FAIL,null);
         int sec_id = cs.addCourseSection("MIAO101",1,"猫猫学期末学期~",20);
@@ -22,7 +21,6 @@ public class CourseServiceTest {
 //        cs.addCourseSectionClass(sec_id,1);
         Course ccc = cs.getCourseBySection(999);
         System.out.println(ccc);
-=======
 //        cs.removeCourse("MIAO101");
 //        List<Course> cc =  cs.getAllCourses();
 //        System.out.println(cc);
@@ -46,6 +44,5 @@ public class CourseServiceTest {
 //
 //        Course ccc = cs.getCourseBySection(999);
 //        System.out.println(ccc);
->>>>>>> c16a8af558ce1ab46bf5f10075e4e152000e1983
     }
 }

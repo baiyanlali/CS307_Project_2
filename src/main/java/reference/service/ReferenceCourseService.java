@@ -258,9 +258,6 @@ public class ReferenceCourseService implements CourseService {
             stmt.setInt(2,semesterId);
             ResultSet rs = stmt.executeQuery();
             List<CourseSection> con=new ArrayList<>();
-            if(rs.wasNull()){
-                throw new EntityNotFoundException();
-            }
             while (rs.next()){
                 int sec_id=rs.getInt("sec_id");
                 String sec_name=rs.getString("sec_name");
@@ -275,8 +272,9 @@ public class ReferenceCourseService implements CourseService {
 
                 con.add(c1);
             }
-
-            return con;
+            if(!con.isEmpty())
+                return con;
+            else throw new EntityNotFoundException();
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -290,9 +288,6 @@ public class ReferenceCourseService implements CourseService {
             PreparedStatement stmt = connection.prepareStatement("select course_id from section where sec_id=?");
             stmt.setInt(1,sectionId);
             ResultSet rs = stmt.executeQuery();
-            if(rs.wasNull()){
-                throw new EntityNotFoundException();
-            }
             if (rs.next()){
                 String course_id = rs.getString("course_id");
                 stmt=connection.prepareStatement("select * from course where course_id=?");
@@ -346,9 +341,6 @@ public class ReferenceCourseService implements CourseService {
                         "where sec_id=?;");
             stmt.setInt(1,sectionId);
             ResultSet rs = stmt.executeQuery();
-            if(rs.wasNull()){
-                throw new EntityNotFoundException();
-            }
             List<CourseSectionClass> con=new ArrayList<>();
             while (rs.next()){
                 CourseSectionClass c1=new CourseSectionClass();
@@ -389,7 +381,9 @@ public class ReferenceCourseService implements CourseService {
                 c1.location=rs.getString("loc");
                 con.add(c1);
             }
-            return con;
+            if(!con.isEmpty())
+                return con;
+            else throw new EntityNotFoundException();
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -410,10 +404,6 @@ public class ReferenceCourseService implements CourseService {
 
             stmt.setInt(1,classId);
             ResultSet rs = stmt.executeQuery();
-            List<CourseSection> con=new ArrayList<>();
-            if(rs.wasNull()){
-                throw new EntityNotFoundException();
-            }
             if (rs.next()){
                 int sec_id=rs.getInt("sec_id");
                 String course_id=rs.getString("course_id");
@@ -428,13 +418,14 @@ public class ReferenceCourseService implements CourseService {
                 c1.leftCapacity=left_capacity;
 
                 return c1;
+            }else{
+                throw new EntityNotFoundException();
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
-        return null;
     }
 
     @Override
@@ -452,9 +443,6 @@ public class ReferenceCourseService implements CourseService {
             stmt.setString(1,courseId);
             stmt.setInt(2,semesterId);
             ResultSet rs=stmt.executeQuery();
-            if(rs.wasNull()){
-                throw new EntityNotFoundException();
-            }
 
             List<Student> con=new ArrayList<>();
             while (rs.next()){
@@ -487,7 +475,9 @@ public class ReferenceCourseService implements CourseService {
                 }
                 con.add(s);
             }
-            return con;
+            if(!con.isEmpty())
+                return con;
+            else throw new EntityNotFoundException();
         }catch(SQLException e){
             e.printStackTrace();
             return null;

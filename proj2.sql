@@ -111,5 +111,18 @@ create table pre_courses(
 
 
 
+create or replace function add_department(dept_nam varchar)
+    returns integer
+as $$
+begin
+    insert into department(dept_name) values(dept_name);
+    return lastval();
+end;
+
+$$
+    language plpgsql;
+
+
+
 
 
