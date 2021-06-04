@@ -17,7 +17,7 @@ public class CourseServiceTest {
         DayOfWeek dow=DayOfWeek.FRIDAY;
         List<Short> weeklist=new ArrayList<>();
         
-        cs.addCourseSectionClass(sec_id,1,)
+//        cs.addCourseSectionClass(sec_id,1);
         Course ccc = cs.getCourseBySection(999);
         System.out.println(ccc);
     }
