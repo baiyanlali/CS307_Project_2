@@ -10,10 +10,7 @@ import cn.edu.sustech.cs307.exception.EntityNotFoundException;
 import cn.edu.sustech.cs307.service.CourseService;
 
 import javax.annotation.Nullable;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
@@ -152,22 +149,24 @@ public class ReferenceCourseService implements CourseService {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection())
         {
             PreparedStatement p1=connection.prepareStatement("select sec_id from section where course_id=?");
+            p1.setString(1,courseId);
             ResultSet rs= p1.executeQuery();
             while (rs.next()){
                 int secId = rs.getInt("sec_id");
                 removeCourseSection(secId);
             }
 
-            p1.execute(String.format("delete from pre_courses where course_id = %s",courseId));
-            p1.execute(String.format("delete from major_course where course_id = %s",courseId));
-            p1.execute(String.format("delete from learning_info where course_id = %s",courseId));
-
+            Statement stat= connection.createStatement();
+            try{ stat.execute(String.format("delete from pre_courses where course_id = %s",courseId));}catch(SQLException e){}
+            try{ stat.execute(String.format("delete from major_course where course_id = %s",courseId));}catch(SQLException e){}
+            try{ stat.execute(String.format("delete from learning_info where course_id = %s",courseId));}catch(SQLException e){}
 
             PreparedStatement stmt = connection.prepareStatement("delete from course where course_id=?");
             stmt.setString(1, courseId);
             stmt.execute();
 
-            stmt.execute("commit");
+            stmt=connection.prepareStatement("commit; ");
+            stmt.execute();
             } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -179,6 +178,7 @@ public class ReferenceCourseService implements CourseService {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection())
         {
             PreparedStatement p1=connection.prepareStatement("select class_id from class where sec_id=?");
+            p1.setInt(1,sectionId);
             ResultSet rs= p1.executeQuery();
             while (rs.next()){
                 int classID = rs.getInt("class_id");
@@ -187,7 +187,9 @@ public class ReferenceCourseService implements CourseService {
             PreparedStatement stmt=connection.prepareStatement("delete from section where sec_id=?");
             stmt.setInt(1,sectionId);
             stmt.execute();
-            stmt.execute("commit");
+
+            stmt=connection.prepareStatement("commit; ");
+            stmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -206,7 +208,9 @@ public class ReferenceCourseService implements CourseService {
             stmt=connection.prepareStatement("delete from class where class_id=?");
             stmt.setInt(1,classId);
             stmt.execute();
-            stmt.execute("commit");
+
+            stmt=connection.prepareStatement("commit; ");
+            stmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
