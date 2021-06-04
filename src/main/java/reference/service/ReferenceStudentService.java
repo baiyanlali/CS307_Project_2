@@ -54,7 +54,7 @@ public class ReferenceStudentService implements StudentService {
     }
 
     @Override
-    public void dropCourse(int studentId, int sectionId) {
+    public void dropCourse(int studentId, int sectionId) throws IllegalStateException {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
              PreparedStatement stmt = connection.prepareStatement("call drop_course(?, ?)")) {
             stmt.setInt(1, studentId);
