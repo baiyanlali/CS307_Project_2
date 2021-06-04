@@ -23,6 +23,14 @@ public class week_test {
             }
         }
         System.out.println(week.toString());
+
+        List<Short> weekOfList=new ArrayList<>();
+        for (short i = 0; i < week.toString().length(); i++) {
+            if(week.toString().charAt(i)=='1'){
+                weekOfList.add((short) (i+(short) 1));
+            }
+        }
+        System.out.println(weekOfList);
     }
 
 }
