@@ -157,9 +157,9 @@ public class ReferenceCourseService implements CourseService {
             }
 
             Statement stat= connection.createStatement();
-            try{ stat.execute(String.format("delete from pre_courses where course_id = %s",courseId));}catch(SQLException e){}
-            try{ stat.execute(String.format("delete from major_course where course_id = %s",courseId));}catch(SQLException e){}
-            try{ stat.execute(String.format("delete from learning_info where course_id = %s",courseId));}catch(SQLException e){}
+            stat.execute(String.format("delete from pre_courses where course_id = \'%s\'",courseId));
+            stat.execute(String.format("delete from major_course where course_id = \'%s\'",courseId));
+
 
             PreparedStatement stmt = connection.prepareStatement("delete from course where course_id=?");
             stmt.setString(1, courseId);
@@ -184,9 +184,13 @@ public class ReferenceCourseService implements CourseService {
                 int classID = rs.getInt("class_id");
                 removeCourseSectionClass(classID);
             }
+            Statement stat= connection.createStatement();
+            stat.execute(String.format("delete from learning_info where sec_id = \'%s\'",sectionId));
+
             PreparedStatement stmt=connection.prepareStatement("delete from section where sec_id=?");
             stmt.setInt(1,sectionId);
             stmt.execute();
+
 
             stmt=connection.prepareStatement("commit; ");
             stmt.execute();
@@ -199,10 +203,7 @@ public class ReferenceCourseService implements CourseService {
     public void removeCourseSectionClass(int classId) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection())
         {
-            PreparedStatement stmt = connection.prepareStatement("delete from location where class_id=?");
-            stmt.setInt(1,classId);
-            stmt.execute();
-            stmt=connection.prepareStatement("delete from teaching_info where class_id=?");
+            PreparedStatement stmt = connection.prepareStatement("delete from teaching_info where class_id=?");
             stmt.setInt(1,classId);
             stmt.execute();
             stmt=connection.prepareStatement("delete from class where class_id=?");
@@ -336,10 +337,13 @@ public class ReferenceCourseService implements CourseService {
     @Override
     public List<CourseSectionClass> getCourseSectionClasses(int sectionId) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection()) {
-            PreparedStatement stmt = connection.prepareStatement("select class_id,class_end,class_begin,week_list,day_of_week,loc,first_name,last_name,id" +
-                                                                        " from class join location l on l.location_id = class.loc_id join teaching_info ti on class.class_id = ti.class_id " +
-                                                                            "join users u on ti.instructor_id = u.id " +
-                                                                            "where sec_id=?");
+            PreparedStatement stmt = connection.prepareStatement(
+                    "select *\n" +
+                        "from class\n" +
+                        "left join teaching_info ti on class.class_id = ti.class_id\n" +
+                        "join location l on l.location_id = class.loc_id\n" +
+                        "left join users u on u.id = ti.instructor_id\n" +
+                        "where sec_id=?;");
             stmt.setInt(1,sectionId);
             ResultSet rs = stmt.executeQuery();
             if(rs.wasNull()){
@@ -361,19 +365,27 @@ public class ReferenceCourseService implements CourseService {
                 c1.weekList=weekOfList;
                 int day_of_week=rs.getInt("day_of_week");
                 c1.dayOfWeek= DayOfWeek.of(day_of_week);
+
+                //may be null
+
                 int user_id=rs.getInt("id");
                 String first_name=rs.getString("first_name");
                 String last_name=rs.getString("last_name");
-                Instructor instructor=new Instructor();
-                instructor.id=user_id;
-                Pattern pattern=Pattern.compile("[a-zA-Z]*");
-                boolean english_name = pattern.matcher(first_name).matches();
-                if(english_name){
-                    instructor.fullName=first_name.concat(" ").concat(last_name);
+                if (first_name!=null){
+                    Instructor instructor=new Instructor();
+                    instructor.id=user_id;
+                    Pattern pattern=Pattern.compile("[a-zA-Z]*");
+                    boolean english_name = pattern.matcher(first_name).matches();
+                    if(english_name){
+                        instructor.fullName=first_name.concat(" ").concat(last_name);
+                    }else{
+                        instructor.fullName=first_name.concat(last_name);
+                    }
+                    c1.instructor=instructor;
                 }else{
-                    instructor.fullName=first_name.concat(last_name);
+                    c1.instructor=null;
                 }
-                c1.instructor=instructor;
+
                 c1.location=rs.getString("loc");
                 con.add(c1);
             }
@@ -431,11 +443,11 @@ public class ReferenceCourseService implements CourseService {
             PreparedStatement stmt = connection.prepareStatement(
                     "select  case m.major_id when null then false else true end as has_major  ,id,first_name,last_name,enroll_date,major_name,m.major_id,d.dept_id,dept_name\n" +
                             "from section as s\n" +
-                            "join learning_info li on s.sec_id = li.sec_id\n" +
-                            "join users u on u.id = li.sid\n" +
-                            "join student_info si on u.id = si.sid\n" +
-                            "join major m on si.major_id = m.major_id\n" +
-                            "join department d on m.dept_id = d.dept_id\n" +
+                            "left join learning_info li on s.sec_id = li.sec_id\n" +
+                            "left join users u on u.id = li.sid\n" +
+                            "left join student_info si on u.id = si.sid\n" +
+                            "left join major m on si.major_id = m.major_id\n" +
+                            "left join department d on m.dept_id = d.dept_id\n" +
                             "where course_id=? and semester_id=?");
             stmt.setString(1,courseId);
             stmt.setInt(2,semesterId);
