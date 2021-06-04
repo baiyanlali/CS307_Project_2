@@ -34,11 +34,12 @@ public class ReferenceStudentService implements StudentService {
              PreparedStatement stmt = connection.prepareStatement("select searchCourse(?,?,?,?) ")) {
             stmt.setInt(1, studentId);
             stmt.setInt(2, semesterId);
-            stmt.setString(3,);
+//            stmt.setString(3,);
             stmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     @Override
@@ -51,6 +52,7 @@ public class ReferenceStudentService implements StudentService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     @Override
@@ -76,7 +78,7 @@ public class ReferenceStudentService implements StudentService {
             ResultSet rs=stmt.executeQuery();
             while(rs.next()){
                 String name=rs.getString("name");
-                
+
             }
         } catch (SQLException e) {
             e.printStackTrace();

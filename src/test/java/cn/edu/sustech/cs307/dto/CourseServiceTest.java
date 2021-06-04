@@ -13,8 +13,16 @@ public class CourseServiceTest {
 
         CourseService cs=new ReferenceCourseService();
 //        cs.removeCourse("MIAO101");
-        List<Course> cc =  cs.getAllCourses();
-        System.out.println(cc);
+//        List<Course> cc =  cs.getAllCourses();
+//        System.out.println(cc);
+
+//        var csis=cs.getCourseSectionsInSemester("MARS101",2);
+//        var csis=cs.getCourseBySection(4);
+//        var csis=cs.getCourseSectionByClass(4);
+//        var csis=cs.getCourseSectionClasses(4);
+//        var csis=cs.getEnrolledStudentsInSemester("MARS101",1);
+        cs.removeCourse("MARS102");
+//        System.out.println(csis);
 //        cs.addCourse("MIAO101","猫猫学导论",5,32, Course.CourseGrading.PASS_OR_FAIL,null);
 //        int sec_id = cs.addCourseSection("MIAO101",1,"猫猫学期末学期~",20);
 //        DayOfWeek dow=DayOfWeek.FRIDAY;
