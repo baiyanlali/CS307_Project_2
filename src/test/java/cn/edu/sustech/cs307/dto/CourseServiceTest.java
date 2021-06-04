@@ -1,5 +1,9 @@
 package cn.edu.sustech.cs307.dto;
 
+import cn.edu.sustech.cs307.dto.prerequisite.AndPrerequisite;
+import cn.edu.sustech.cs307.dto.prerequisite.CoursePrerequisite;
+import cn.edu.sustech.cs307.dto.prerequisite.OrPrerequisite;
+import cn.edu.sustech.cs307.dto.prerequisite.Prerequisite;
 import cn.edu.sustech.cs307.service.CourseService;
 import reference.service.ReferenceCourseService;
 
@@ -10,6 +14,12 @@ import java.util.List;
 
 public class CourseServiceTest {
     public static void main(String[] args) {
+        Prerequisite calculus = new OrPrerequisite(List.of(
+                new CoursePrerequisite("MA101A"),
+                new CoursePrerequisite("MA101B")
+        ));
+        Prerequisite algebra = new CoursePrerequisite("MA103A");
+        Prerequisite prerequisite = new AndPrerequisite(List.of(calculus, algebra));
 
         CourseService cs=new ReferenceCourseService();
         cs.removeCourse("MIAO101");
@@ -21,6 +31,23 @@ public class CourseServiceTest {
 //        cs.addCourseSectionClass(sec_id,1);
         Course ccc = cs.getCourseBySection(999);
         System.out.println(ccc);
+        cs.addCourse("MA101A", "高等数学上",4,64, Course.CourseGrading.HUNDRED_MARK_SCORE, null);
+        cs.addCourse("MA101B", "低等数学上", 4, 64, Course.CourseGrading.HUNDRED_MARK_SCORE, null);
+        cs.addCourse("MA103A", "线性代数", 4, 64, Course.CourseGrading.HUNDRED_MARK_SCORE, null);
+        cs.addCourse("MA102A", "超等数学", 4, 64, Course.CourseGrading.HUNDRED_MARK_SCORE, prerequisite);
+//        cs.removeCourse("MA102A");
+//        cs.removeCourse("MA101A");
+//        cs.removeCourse("MA101B");
+//        cs.removeCourse("MA103A");
+
+
+//        cs.addCourseSectionClass(sec_id,1);
+//        Course ccc = cs.getCourseBySection(999);
+//        System.out.println(ccc);
+
+
+
+//=======
 //        cs.removeCourse("MIAO101");
 //        List<Course> cc =  cs.getAllCourses();
 //        System.out.println(cc);
@@ -30,7 +57,7 @@ public class CourseServiceTest {
 //        var csis=cs.getCourseSectionByClass(4);
 //        var csis=cs.getCourseSectionClasses(4);
 //        var csis=cs.getEnrolledStudentsInSemester("MARS101",1);
-        cs.removeCourse("MARS102");
+//        cs.removeCourse("MARS102");
 //        System.out.println(csis);
 //        cs.addCourse("MIAO101","猫猫学导论",5,32, Course.CourseGrading.PASS_OR_FAIL,null);
 //        int sec_id = cs.addCourseSection("MIAO101",1,"猫猫学期末学期~",20);
@@ -44,5 +71,6 @@ public class CourseServiceTest {
 //
 //        Course ccc = cs.getCourseBySection(999);
 //        System.out.println(ccc);
+
     }
 }

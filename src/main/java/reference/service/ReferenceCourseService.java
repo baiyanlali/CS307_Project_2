@@ -22,69 +22,73 @@ public class ReferenceCourseService implements CourseService {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();) {
             PreparedStatement stmt = connection.prepareStatement("call add_course(?,?,?,?,?,?)");
             PreparedStatement pre_courses_list=connection.prepareStatement("insert into pre_courses(course_id, pre_course_id) VALUES (?,?)");
-            String expression = prerequisite.when(new Prerequisite.Cases<>() {
-                                                      @Override
-                                                      public String match(AndPrerequisite self) {
-                                                          String[] children = self.terms.stream()
-                                                                  .map(term -> term.when(this))
-                                                                  .toArray(String[]::new);
-                                                          return '(' + String.join(" && ", children) + ')';
-                                                      }
-
-                                                      @Override
-                                                      public String match(OrPrerequisite self) {
-                                                          String[] children = self.terms.stream()
-                                                                  .map(term -> term.when(this))
-                                                                  .toArray(String[]::new);
-                                                          return '(' + String.join(" || ", children) + ')';
-                                                      }
-
-                                                      @Override
-                                                      public String match(CoursePrerequisite self) {
-                                                          return self.courseID;
-                                                      }
-                                                  });
-
-
-            String clean=expression.replaceAll("\\|\\||\\&\\&|\\(|\\)", "");
-            String[] nameList=clean.split(" ");
-
-            String pattern = prerequisite.when(new Prerequisite.Cases<>() {
-                                                   @Override
-                                                   public String match(AndPrerequisite self) {
-                                                       String[] children = self.terms.stream()
-                                                               .map(term -> term.when(this))
-                                                               .toArray(String[]::new);
-                                                       return '(' + String.join(" && ", children) + ')';
-                                                   }
-
-                                                   @Override
-                                                   public String match(OrPrerequisite self) {
-                                                       String[] children = self.terms.stream()
-                                                               .map(term -> term.when(this))
-                                                               .toArray(String[]::new);
-                                                       return '(' + String.join(" || ", children) + ')';
-                                                   }
-
-                                                   @Override
-                                                   public String match(CoursePrerequisite self) {
-                                                       return "%d";
-                                                   }
-                                               });
-
-                //ready to insert
             stmt.setString(1,courseId);
             stmt.setString(2,courseName);
             stmt.setInt(3,credit);
             stmt.setInt(4,classHour);
             stmt.setInt(5,grading.equals(Course.CourseGrading.PASS_OR_FAIL)?0:1);
-            stmt.setString(6, pattern);
-            stmt.execute();
+            if(prerequisite != null) {
+                String expression = prerequisite.when(new Prerequisite.Cases<>() {
+                    @Override
+                    public String match(AndPrerequisite self) {
+                        String[] children = self.terms.stream()
+                                .map(term -> term.when(this))
+                                .toArray(String[]::new);
+                        return '(' + String.join(" && ", children) + ')';
+                    }
 
-            for (int i = 0; i < nameList.length; i++) {
-                pre_courses_list.setString(1, courseId);
-                pre_courses_list.setString(2, nameList[i].trim());        //remove white space
-                pre_courses_list.execute();
+                    @Override
+                    public String match(OrPrerequisite self) {
+                        String[] children = self.terms.stream()
+                                .map(term -> term.when(this))
+                                .toArray(String[]::new);
+                        return '(' + String.join(" || ", children) + ')';
+                    }
+
+                    @Override
+                    public String match(CoursePrerequisite self) {
+                        return self.courseID;
+                    }
+                });
+
+
+                String clean = expression.replaceAll("\\|\\||\\&\\&|\\(|\\)", "").trim();
+                String[] nameList = clean.split("\\s+");
+
+                String pattern = prerequisite.when(new Prerequisite.Cases<>() {
+                    @Override
+                    public String match(AndPrerequisite self) {
+                        String[] children = self.terms.stream()
+                                .map(term -> term.when(this))
+                                .toArray(String[]::new);
+                        return '(' + String.join(" && ", children) + ')';
+                    }
+
+                    @Override
+                    public String match(OrPrerequisite self) {
+                        String[] children = self.terms.stream()
+                                .map(term -> term.when(this))
+                                .toArray(String[]::new);
+                        return '(' + String.join(" || ", children) + ')';
+                    }
+
+                    @Override
+                    public String match(CoursePrerequisite self) {
+                        return "%d";
+                    }
+                });
+
+                stmt.setString(6, pattern);
+                stmt.execute();
+
+                for (int i = 0; i < nameList.length; i++) {
+                    pre_courses_list.setString(1, courseId);
+                    pre_courses_list.setString(2, nameList[i].trim());        //remove white space
+                    pre_courses_list.execute();
+                }
+            }else {
+                stmt.setString(6, null);
+                stmt.execute();
             }
 
         } catch (SQLException e) {
