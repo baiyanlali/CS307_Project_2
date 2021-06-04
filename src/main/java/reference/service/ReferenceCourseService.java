@@ -370,13 +370,8 @@ public class ReferenceCourseService implements CourseService {
                 if (first_name!=null){
                     Instructor instructor=new Instructor();
                     instructor.id=user_id;
-                    Pattern pattern=Pattern.compile("[a-zA-Z]*");
-                    boolean english_name = pattern.matcher(first_name).matches();
-                    if(english_name){
-                        instructor.fullName=first_name.concat(" ").concat(last_name);
-                    }else{
-                        instructor.fullName=first_name.concat(last_name);
-                    }
+                    instructor.fullName=Util.getName(first_name,last_name);
+
                     c1.instructor=instructor;
                 }else{
                     c1.instructor=null;
@@ -455,13 +450,8 @@ public class ReferenceCourseService implements CourseService {
                 s.id=rs.getInt("id");
                 String first_name=rs.getString("first_name");
                 String last_name=rs.getString("last_name");
-                Pattern pattern=Pattern.compile("[a-zA-Z]*");
-                boolean english_name = pattern.matcher(first_name).matches();
-                if(english_name){
-                    s.fullName=first_name.concat(" ").concat(last_name);
-                }else{
-                    s.fullName=first_name.concat(last_name);
-                }
+                s.fullName = Util.getName(first_name,last_name);
+
 
                 s.enrolledDate=rs.getDate("enroll_date");
 
