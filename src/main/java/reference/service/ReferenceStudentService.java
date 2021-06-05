@@ -21,7 +21,7 @@ public class ReferenceStudentService implements StudentService {
     @Override
     public void addStudent(int userId, int majorId, String firstName, String lastName, Date enrolledDate) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("call addstudent(?,?,?,?,?) ")) {
+             PreparedStatement stmt = connection.prepareStatement("select addstudent(?,?,?,?,?) ")) {
             stmt.setInt(1, userId);
             stmt.setInt(2, majorId);
             stmt.setString(3, firstName);
@@ -47,14 +47,71 @@ public class ReferenceStudentService implements StudentService {
         return null;
     }
 
-    static boolean judge=false;
     @Override
     public EnrollResult enrollCourse(int studentId, int sectionId) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("call COURSE_FOUND(?) ")) {
+             PreparedStatement stmt = connection.prepareStatement("select COURSE_FOUND(?) ")) {
+            boolean judge=false;
+            EnrollResult ans;
             stmt.setInt(1, sectionId);
             stmt.execute();
             ResultSet rs = stmt.executeQuery();
+            judge=rs.next();
+             if(!judge){
+                 ans=EnrollResult.COURSE_NOT_FOUND;
+                 return ans;
+             }
+            PreparedStatement stmt1=connection.prepareStatement("select COURSE_IS_FULL(?)");
+            stmt1.setInt(1, sectionId);
+            stmt1.execute();
+            rs = stmt1.executeQuery();
+            judge=rs.next();
+            if(judge){
+                ans=EnrollResult.COURSE_IS_FULL;
+                return ans;
+            }
+            PreparedStatement stmt2=connection.prepareStatement("select ALREADY_ENROLLED(?,?)");
+            stmt2.setInt(1, sectionId);
+            stmt2.setInt(2, studentId);
+            stmt2.execute();
+            rs = stmt2.executeQuery();
+            judge=rs.next();
+            if(judge){
+                ans=EnrollResult.ALREADY_ENROLLED;
+                return ans;
+            }
+            PreparedStatement stmt3=connection.prepareStatement("select ALREADY_PASSED(?,?)");
+            stmt3.setInt(1, sectionId);
+            stmt3.setInt(2, studentId);
+            stmt3.execute();
+            rs = stmt3.executeQuery();
+            judge=rs.next();
+            if(judge){
+                ans=EnrollResult.ALREADY_PASSED;
+                return ans;
+            }
+            PreparedStatement stmt4=connection.prepareStatement("select COURSE_CONFLICT_FOUND(?,?)");
+            stmt4.setInt(1, sectionId);
+            stmt4.setInt(2, studentId);
+            stmt4.execute();
+            rs = stmt4.executeQuery();
+            judge=rs.next();
+            if(judge){
+                ans=EnrollResult.COURSE_CONFLICT_FOUND;
+                return ans;
+            }
+            PreparedStatement stmt5=connection.prepareStatement("select getCoursebySection(?,?)");
+            stmt5.setInt(1, sectionId);
+            stmt4.setInt(2, studentId);
+            stmt4.execute();
+            rs = stmt4.executeQuery();
+            judge=rs.next();
+            if(judge){
+                ans=EnrollResult.COURSE_CONFLICT_FOUND;
+                return ans;
+            }
+            boolean judge1=passedPrerequisitesForCourse(studentId,)
+
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -133,10 +190,10 @@ public class ReferenceStudentService implements StudentService {
                 mappp.put(dow,entries[i]);
             }
             ct.table=mappp;
+            return ct;
         }catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
     @Override
