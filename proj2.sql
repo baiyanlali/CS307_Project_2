@@ -111,4 +111,70 @@ create table pre_courses(
 
 
 
+create or replace function add_department(dept_nam varchar)
+    returns integer
+as $$
+begin
+    insert into department(dept_name) values(dept_name);
+    return lastval();
+end;
+
+$$
+    language plpgsql;
+
+
+create or replace function add_semster(sem_nam varchar,begin date,endd date)
+    returns integer
+as $$
+begin
+    insert into semester(sem_name, sem_begin, sem_end) VALUES (sem_nam,begin,endd);
+    return lastval();
+end;
+
+$$
+    language plpgsql;
+
+
+
+create or replace function remove_semester(id integer) returns void
+as $$
+begin
+    delete from learning_info where sid in
+                                    (
+                                        select sid from learning_info where sec_id in
+                                                                            (select sec_id from section where semester_id=id)
+                                    );
+
+    delete from teaching_info where class_id in (
+        select class_id from class where sec_id in
+                                         (select sec_id from section where semester_id = id)
+    );
+
+    delete from class where sec_id in (select sec_id from section where semester_id = id);
+
+    delete from section where semester_id=id;
+
+    delete from semester where sem_id=id;
+
+end;
+$$
+    language plpgsql;
+
+
+create or replace function remove_user(id integer) returns void
+as $$
+begin
+
+    delete from teaching_info where instructor_id=id;
+
+    delete from learning_info where sid=id;
+
+    delete from student_info where sid=id;
+
+end;
+$$
+    language plpgsql;
+
+
+
 

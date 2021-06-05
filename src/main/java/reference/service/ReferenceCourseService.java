@@ -2,30 +2,95 @@ package reference.service;
 
 import cn.edu.sustech.cs307.database.SQLDataSource;
 import cn.edu.sustech.cs307.dto.*;
+import cn.edu.sustech.cs307.dto.prerequisite.AndPrerequisite;
+import cn.edu.sustech.cs307.dto.prerequisite.CoursePrerequisite;
+import cn.edu.sustech.cs307.dto.prerequisite.OrPrerequisite;
 import cn.edu.sustech.cs307.dto.prerequisite.Prerequisite;
 import cn.edu.sustech.cs307.exception.EntityNotFoundException;
 import cn.edu.sustech.cs307.service.CourseService;
 
 import javax.annotation.Nullable;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
 public class ReferenceCourseService implements CourseService {
     @Override
     public void addCourse(String courseId, String courseName, int credit, int classHour, Course.CourseGrading grading, @Nullable Prerequisite prerequisite) {
-        try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("insert into course(course_id,course_name,credit,course_hour) values (?,?,?,?)")) {
+        try (Connection connection = SQLDataSource.getInstance().getSQLConnection();) {
+            PreparedStatement stmt = connection.prepareStatement("call add_course(?,?,?,?,?,?)");
+            PreparedStatement pre_courses_list=connection.prepareStatement("insert into pre_courses(course_id, pre_course_id) VALUES (?,?)");
             stmt.setString(1,courseId);
             stmt.setString(2,courseName);
             stmt.setInt(3,credit);
             stmt.setInt(4,classHour);
-            stmt.execute();
+            stmt.setInt(5,grading.equals(Course.CourseGrading.PASS_OR_FAIL)?0:1);
+            if(prerequisite != null) {
+                String expression = prerequisite.when(new Prerequisite.Cases<>() {
+                    @Override
+                    public String match(AndPrerequisite self) {
+                        String[] children = self.terms.stream()
+                                .map(term -> term.when(this))
+                                .toArray(String[]::new);
+                        return '(' + String.join(" && ", children) + ')';
+                    }
+
+                    @Override
+                    public String match(OrPrerequisite self) {
+                        String[] children = self.terms.stream()
+                                .map(term -> term.when(this))
+                                .toArray(String[]::new);
+                        return '(' + String.join(" || ", children) + ')';
+                    }
+
+                    @Override
+                    public String match(CoursePrerequisite self) {
+                        return self.courseID;
+                    }
+                });
+
+
+                String clean = expression.replaceAll("\\|\\||\\&\\&|\\(|\\)", "").trim();
+                String[] nameList = clean.split("\\s+");
+
+                String pattern = prerequisite.when(new Prerequisite.Cases<>() {
+                    @Override
+                    public String match(AndPrerequisite self) {
+                        String[] children = self.terms.stream()
+                                .map(term -> term.when(this))
+                                .toArray(String[]::new);
+                        return '(' + String.join(" && ", children) + ')';
+                    }
+
+                    @Override
+                    public String match(OrPrerequisite self) {
+                        String[] children = self.terms.stream()
+                                .map(term -> term.when(this))
+                                .toArray(String[]::new);
+                        return '(' + String.join(" || ", children) + ')';
+                    }
+
+                    @Override
+                    public String match(CoursePrerequisite self) {
+                        return "%d";
+                    }
+                });
+
+                stmt.setString(6, pattern);
+                stmt.execute();
+
+                for (int i = 0; i < nameList.length; i++) {
+                    pre_courses_list.setString(1, courseId);
+                    pre_courses_list.setString(2, nameList[i].trim());        //remove white space
+                    pre_courses_list.execute();
+                }
+            }else {
+                stmt.setString(6, null);
+                stmt.execute();
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -88,22 +153,24 @@ public class ReferenceCourseService implements CourseService {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection())
         {
             PreparedStatement p1=connection.prepareStatement("select sec_id from section where course_id=?");
+            p1.setString(1,courseId);
             ResultSet rs= p1.executeQuery();
             while (rs.next()){
                 int secId = rs.getInt("sec_id");
                 removeCourseSection(secId);
             }
 
-            p1.execute(String.format("delete from pre_courses where course_id = %s",courseId));
-            p1.execute(String.format("delete from major_course where course_id = %s",courseId));
-            p1.execute(String.format("delete from learning_info where course_id = %s",courseId));
+            Statement stat= connection.createStatement();
+            stat.execute(String.format("delete from pre_courses where course_id = \'%s\'",courseId));
+            stat.execute(String.format("delete from major_course where course_id = \'%s\'",courseId));
 
 
             PreparedStatement stmt = connection.prepareStatement("delete from course where course_id=?");
             stmt.setString(1, courseId);
             stmt.execute();
 
-            stmt.execute("commit");
+            stmt=connection.prepareStatement("commit; ");
+            stmt.execute();
             } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -115,15 +182,22 @@ public class ReferenceCourseService implements CourseService {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection())
         {
             PreparedStatement p1=connection.prepareStatement("select class_id from class where sec_id=?");
+            p1.setInt(1,sectionId);
             ResultSet rs= p1.executeQuery();
             while (rs.next()){
                 int classID = rs.getInt("class_id");
                 removeCourseSectionClass(classID);
             }
+            Statement stat= connection.createStatement();
+            stat.execute(String.format("delete from learning_info where sec_id = \'%s\'",sectionId));
+
             PreparedStatement stmt=connection.prepareStatement("delete from section where sec_id=?");
             stmt.setInt(1,sectionId);
             stmt.execute();
-            stmt.execute("commit");
+
+
+            stmt=connection.prepareStatement("commit; ");
+            stmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -133,16 +207,15 @@ public class ReferenceCourseService implements CourseService {
     public void removeCourseSectionClass(int classId) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection())
         {
-            PreparedStatement stmt = connection.prepareStatement("delete from location where class_id=?");
-            stmt.setInt(1,classId);
-            stmt.execute();
-            stmt=connection.prepareStatement("delete from teaching_info where class_id=?");
+            PreparedStatement stmt = connection.prepareStatement("delete from teaching_info where class_id=?");
             stmt.setInt(1,classId);
             stmt.execute();
             stmt=connection.prepareStatement("delete from class where class_id=?");
             stmt.setInt(1,classId);
             stmt.execute();
-            stmt.execute("commit");
+
+            stmt=connection.prepareStatement("commit; ");
+            stmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -189,9 +262,6 @@ public class ReferenceCourseService implements CourseService {
             stmt.setInt(2,semesterId);
             ResultSet rs = stmt.executeQuery();
             List<CourseSection> con=new ArrayList<>();
-            if(rs.wasNull()){
-                throw new EntityNotFoundException();
-            }
             while (rs.next()){
                 int sec_id=rs.getInt("sec_id");
                 String sec_name=rs.getString("sec_name");
@@ -206,8 +276,9 @@ public class ReferenceCourseService implements CourseService {
 
                 con.add(c1);
             }
-
-            return con;
+            if(!con.isEmpty())
+                return con;
+            else throw new EntityNotFoundException();
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -221,9 +292,6 @@ public class ReferenceCourseService implements CourseService {
             PreparedStatement stmt = connection.prepareStatement("select course_id from section where sec_id=?");
             stmt.setInt(1,sectionId);
             ResultSet rs = stmt.executeQuery();
-            if(rs.wasNull()){
-                throw new EntityNotFoundException();
-            }
             if (rs.next()){
                 String course_id = rs.getString("course_id");
                 stmt=connection.prepareStatement("select * from course where course_id=?");
@@ -268,15 +336,15 @@ public class ReferenceCourseService implements CourseService {
     @Override
     public List<CourseSectionClass> getCourseSectionClasses(int sectionId) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection()) {
-            PreparedStatement stmt = connection.prepareStatement("select class_id,class_end,class_begin,week_list,day_of_week,loc,first_name,last_name,id" +
-                                                                        " from class join location l on l.location_id = class.loc_id join teaching_info ti on class.class_id = ti.class_id " +
-                                                                            "join users u on ti.instructor_id = u.id " +
-                                                                            "where sec_id=?");
+            PreparedStatement stmt = connection.prepareStatement(
+                    "select *\n" +
+                        "from class\n" +
+                        "left join teaching_info ti on class.class_id = ti.class_id\n" +
+                        "join location l on l.location_id = class.loc_id\n" +
+                        "left join users u on u.id = ti.instructor_id\n" +
+                        "where sec_id=?;");
             stmt.setInt(1,sectionId);
             ResultSet rs = stmt.executeQuery();
-            if(rs.wasNull()){
-                throw new EntityNotFoundException();
-            }
             List<CourseSectionClass> con=new ArrayList<>();
             while (rs.next()){
                 CourseSectionClass c1=new CourseSectionClass();
@@ -293,23 +361,28 @@ public class ReferenceCourseService implements CourseService {
                 c1.weekList=weekOfList;
                 int day_of_week=rs.getInt("day_of_week");
                 c1.dayOfWeek= DayOfWeek.of(day_of_week);
+
+                //may be null
+
                 int user_id=rs.getInt("id");
                 String first_name=rs.getString("first_name");
                 String last_name=rs.getString("last_name");
-                Instructor instructor=new Instructor();
-                instructor.id=user_id;
-                Pattern pattern=Pattern.compile("[a-zA-Z]*");
-                boolean english_name = pattern.matcher(first_name).matches();
-                if(english_name){
-                    instructor.fullName=first_name.concat(" ").concat(last_name);
+                if (first_name!=null){
+                    Instructor instructor=new Instructor();
+                    instructor.id=user_id;
+                    instructor.fullName=Util.getName(first_name,last_name);
+
+                    c1.instructor=instructor;
                 }else{
-                    instructor.fullName=first_name.concat(last_name);
+                    c1.instructor=null;
                 }
-                c1.instructor=instructor;
+
                 c1.location=rs.getString("loc");
                 con.add(c1);
             }
-            return con;
+            if(!con.isEmpty())
+                return con;
+            else throw new EntityNotFoundException();
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -330,10 +403,6 @@ public class ReferenceCourseService implements CourseService {
 
             stmt.setInt(1,classId);
             ResultSet rs = stmt.executeQuery();
-            List<CourseSection> con=new ArrayList<>();
-            if(rs.wasNull()){
-                throw new EntityNotFoundException();
-            }
             if (rs.next()){
                 int sec_id=rs.getInt("sec_id");
                 String course_id=rs.getString("course_id");
@@ -348,13 +417,14 @@ public class ReferenceCourseService implements CourseService {
                 c1.leftCapacity=left_capacity;
 
                 return c1;
+            }else{
+                throw new EntityNotFoundException();
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
-        return null;
     }
 
     @Override
@@ -363,18 +433,15 @@ public class ReferenceCourseService implements CourseService {
             PreparedStatement stmt = connection.prepareStatement(
                     "select  case m.major_id when null then false else true end as has_major  ,id,first_name,last_name,enroll_date,major_name,m.major_id,d.dept_id,dept_name\n" +
                             "from section as s\n" +
-                            "join learning_info li on s.sec_id = li.sec_id\n" +
-                            "join users u on u.id = li.sid\n" +
-                            "join student_info si on u.id = si.sid\n" +
-                            "join major m on si.major_id = m.major_id\n" +
-                            "join department d on m.dept_id = d.dept_id\n" +
+                            "left join learning_info li on s.sec_id = li.sec_id\n" +
+                            "left join users u on u.id = li.sid\n" +
+                            "left join student_info si on u.id = si.sid\n" +
+                            "left join major m on si.major_id = m.major_id\n" +
+                            "left join department d on m.dept_id = d.dept_id\n" +
                             "where course_id=? and semester_id=?");
             stmt.setString(1,courseId);
             stmt.setInt(2,semesterId);
             ResultSet rs=stmt.executeQuery();
-            if(rs.wasNull()){
-                throw new EntityNotFoundException();
-            }
 
             List<Student> con=new ArrayList<>();
             while (rs.next()){
@@ -383,13 +450,8 @@ public class ReferenceCourseService implements CourseService {
                 s.id=rs.getInt("id");
                 String first_name=rs.getString("first_name");
                 String last_name=rs.getString("last_name");
-                Pattern pattern=Pattern.compile("[a-zA-Z]*");
-                boolean english_name = pattern.matcher(first_name).matches();
-                if(english_name){
-                    s.fullName=first_name.concat(" ").concat(last_name);
-                }else{
-                    s.fullName=first_name.concat(last_name);
-                }
+                s.fullName = Util.getName(first_name,last_name);
+
 
                 s.enrolledDate=rs.getDate("enroll_date");
 
@@ -407,7 +469,9 @@ public class ReferenceCourseService implements CourseService {
                 }
                 con.add(s);
             }
-            return con;
+            if(!con.isEmpty())
+                return con;
+            else throw new EntityNotFoundException();
         }catch(SQLException e){
             e.printStackTrace();
             return null;

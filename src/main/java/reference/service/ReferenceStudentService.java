@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 public class ReferenceStudentService implements StudentService {
     @Override
@@ -35,11 +39,12 @@ public class ReferenceStudentService implements StudentService {
              PreparedStatement stmt = connection.prepareStatement("select searchCourse(?,?,?,?) ")) {
             stmt.setInt(1, studentId);
             stmt.setInt(2, semesterId);
-            stmt.setString(3,);
+//            stmt.setString(3,);
             stmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     static boolean judge=false;
@@ -55,6 +60,7 @@ public class ReferenceStudentService implements StudentService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     @Override
@@ -135,7 +141,41 @@ public class ReferenceStudentService implements StudentService {
 
     @Override
     public boolean passedPrerequisitesForCourse(int studentId, String courseId) {
-        return false;
+        try (Connection connection = SQLDataSource.getInstance().getSQLConnection();){
+             PreparedStatement stmt = connection.prepareStatement("select pre_list(?, ?)");
+             PreparedStatement patterQuery=connection.prepareStatement("select pre_pattern from course where course_id=?");
+
+             //get list
+            stmt.setInt(1, studentId);
+            stmt.setString(2, courseId);
+            ArrayList<Integer> learn_list = new ArrayList<Integer>();
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                learn_list.add(rs.getInt("pre_list"));
+            }
+
+            //get pattern
+            patterQuery.setString(1,courseId);
+            ResultSet rs2 = patterQuery.executeQuery();
+            String pattern=rs2.getString("pre_pattern");
+
+
+            //TODO: test this
+            String evaluate=String.format(pattern, learn_list.toArray());
+
+            ScriptEngineManager manager=new ScriptEngineManager();
+            ScriptEngine engine=manager.getEngineByName("js");
+            int result=(Integer) engine.eval(evaluate);
+            if(result==1){
+                return true;
+            }else {
+                return false;
+            }
+
+        } catch (SQLException | ScriptException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override

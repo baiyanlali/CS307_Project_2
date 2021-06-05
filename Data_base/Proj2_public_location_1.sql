@@ -1,0 +1,1 @@
+INSERT INTO public.location (location_id, loc) VALUES (1, '火星啊');
