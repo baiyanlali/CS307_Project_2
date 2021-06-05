@@ -1,16 +1,15 @@
 package reference.service;
 
 import cn.edu.sustech.cs307.database.SQLDataSource;
-import cn.edu.sustech.cs307.dto.Course;
-import cn.edu.sustech.cs307.dto.CourseSearchEntry;
-import cn.edu.sustech.cs307.dto.CourseTable;
-import cn.edu.sustech.cs307.dto.Major;
+import cn.edu.sustech.cs307.dto.*;
 import cn.edu.sustech.cs307.dto.grade.Grade;
 import cn.edu.sustech.cs307.service.StudentService;
 
 import javax.annotation.Nullable;
 import java.sql.*;
 import java.time.DayOfWeek;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,10 +17,12 @@ public class ReferenceStudentService implements StudentService {
     @Override
     public void addStudent(int userId, int majorId, String firstName, String lastName, Date enrolledDate) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("call (?,?,?) ")) {
+             PreparedStatement stmt = connection.prepareStatement("call addstudent(?,?,?,?,?) ")) {
             stmt.setInt(1, userId);
-            stmt.setString(2, firstName);
-            stmt.setString(3,lastName);
+            stmt.setInt(2, majorId);
+            stmt.setString(3, firstName);
+            stmt.setString(4,lastName);
+            stmt.setDate(5,enrolledDate);
             stmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -41,13 +42,16 @@ public class ReferenceStudentService implements StudentService {
         }
     }
 
+    static boolean judge=false;
     @Override
     public EnrollResult enrollCourse(int studentId, int sectionId) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("call enrollCourse(?,?) ")) {
-            stmt.setInt(1, studentId);
-            stmt.setInt(2, sectionId);
+
+             PreparedStatement stmt = connection.prepareStatement("call COURSE_FOUND(?) ")) {
+            stmt.setInt(1, sectionId);
             stmt.execute();
+            ResultSet rs = stmt.executeQuery();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -72,12 +76,6 @@ public class ReferenceStudentService implements StudentService {
             stmt.setInt(1, studentId);
             stmt.setInt(2, sectionId);
             stmt.execute();
-
-            ResultSet rs=stmt.executeQuery();
-            while(rs.next()){
-                String name=rs.getString("name");
-                
-            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -95,8 +93,44 @@ public class ReferenceStudentService implements StudentService {
 
     @Override
     public CourseTable getCourseTable(int studentId, Date date) {
-
-        return null;
+        try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
+             PreparedStatement stmt = connection.prepareStatement("call getCourseTable(?, ?)")) {
+            stmt.setInt(1, studentId);
+            stmt.setDate(2, date);
+            ResultSet rs = stmt.executeQuery();
+            List<CourseTable.CourseTableEntry>[] entries=new List[7];
+            for (int i = 0; i < 7; i++) {
+                entries[i]=new ArrayList<>();
+            }
+            CourseTable ct=new CourseTable();
+            Map<DayOfWeek,List<CourseTable.CourseTableEntry>> mappp=new HashMap<>();
+            while (rs.next()) {
+                String coursename = rs.getString("course_name");
+                Instructor ins=new Instructor();
+                String instructorName=rs.getString("Instructor");
+                int instructorId=rs.getInt("InstructorId");
+                ins.fullName=instructorName;
+                ins.id=instructorId;
+                int classbegin=rs.getInt("class_begin");
+                int classend=rs.getInt("class_end");
+                String location=rs.getString("loc");
+                int day=rs.getInt("day_of_week");
+                CourseTable.CourseTableEntry cte=new CourseTable.CourseTableEntry();
+                cte.courseFullName=coursename;
+                cte.instructor=ins;
+                cte.classBegin=(short)classbegin;
+                cte.classEnd=(short)classend;
+                cte.location=location;
+                entries[day].add(cte);
+            }
+            for(int i=0;i<7;i++){
+                DayOfWeek dow=DayOfWeek.of(i);
+                mappp.put(dow,entries[i]);
+            }
+            ct.table=mappp;
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
