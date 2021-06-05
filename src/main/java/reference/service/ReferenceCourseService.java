@@ -237,15 +237,16 @@ public class ReferenceCourseService implements CourseService {
                 int course_hour=    rs.getInt("course_hour");
                 //0 is Pass or Fail, 1 is Hundred
                 int grade_type =    rs.getInt("grade_type");
-                Course c1=new Course();
-                c1.credit=credit;
-                c1.classHour=course_hour;
-                c1.id=course_id;
-                c1.name=course_name;
-                switch (grade_type){
-                    case 0:c1.grading= Course.CourseGrading.PASS_OR_FAIL;break;
-                    case 1:c1.grading= Course.CourseGrading.HUNDRED_MARK_SCORE;break;
-                }
+//                Course c1=new Course();
+                Course c1=Util.getCourse(course_id,course_name,credit,course_hour,grade_type);
+//                c1.credit=credit;
+//                c1.classHour=course_hour;
+//                c1.id=course_id;
+//                c1.name=course_name;
+//                switch (grade_type){
+//                    case 0:c1.grading= Course.CourseGrading.PASS_OR_FAIL;break;
+//                    case 1:c1.grading= Course.CourseGrading.HUNDRED_MARK_SCORE;break;
+//                }
 
                 con.add(c1);
             }
@@ -270,12 +271,12 @@ public class ReferenceCourseService implements CourseService {
                 String sec_name=rs.getString("sec_name");
                 int tot_capacity=rs.getInt("tot_capacity");
                 int left_capacity=rs.getInt("left_capacity");
-                CourseSection c1=new CourseSection();
-
-                c1.id=sec_id;
-                c1.name=sec_name;
-                c1.totalCapacity=tot_capacity;
-                c1.leftCapacity=left_capacity;
+//                CourseSection c1=new CourseSection();
+                CourseSection c1=Util.getCourseSection(sec_id,sec_name,tot_capacity,left_capacity);
+//                c1.id=sec_id;
+//                c1.name=sec_name;
+//                c1.totalCapacity=tot_capacity;
+//                c1.leftCapacity=left_capacity;
 
                 con.add(c1);
             }
@@ -296,6 +297,7 @@ public class ReferenceCourseService implements CourseService {
             stmt.setInt(1,sectionId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()){
+                //TODO: TOOO SLOWWWWW!!!
                 String course_id = rs.getString("course_id");
                 stmt=connection.prepareStatement("select * from course where course_id=?");
                 stmt.setString(1,course_id);
@@ -306,19 +308,20 @@ public class ReferenceCourseService implements CourseService {
                     int course_hour = rs.getInt("course_hour");
                     //0 is Pass or Fail, 1 is Hundred
                     int grade_type = rs.getInt("grade_type");
-                    Course c1 = new Course();
-                    c1.credit = credit;
-                    c1.classHour = course_hour;
-                    c1.id = course_id;
-                    c1.name = course_name;
-                    switch (grade_type) {
-                        case 0:
-                            c1.grading = Course.CourseGrading.PASS_OR_FAIL;
-                            break;
-                        case 1:
-                            c1.grading = Course.CourseGrading.HUNDRED_MARK_SCORE;
-                            break;
-                    }
+//                    Course c1 = new Course();
+                    Course c1 = Util.getCourse(course_id,course_name,credit,course_hour,grade_type);
+//                    c1.credit = credit;
+//                    c1.classHour = course_hour;
+//                    c1.id = course_id;
+//                    c1.name = course_name;
+//                    switch (grade_type) {
+//                        case 0:
+//                            c1.grading = Course.CourseGrading.PASS_OR_FAIL;
+//                            break;
+//                        case 1:
+//                            c1.grading = Course.CourseGrading.HUNDRED_MARK_SCORE;
+//                            break;
+//                    }
 
                     return c1;
                 }
@@ -350,37 +353,47 @@ public class ReferenceCourseService implements CourseService {
             ResultSet rs = stmt.executeQuery();
             List<CourseSectionClass> con=new ArrayList<>();
             while (rs.next()){
-                CourseSectionClass c1=new CourseSectionClass();
-                c1.id=rs.getInt("class_id");
-                c1.classEnd= (short) rs.getInt("class_end");
-                c1.classBegin= (short) rs.getInt("class_begin");
+                int class_id=rs.getInt("class_id");
+                short class_end= (short) rs.getInt("class_end");
+                short class_begin= (short) rs.getInt("class_begin");
                 String week_list=rs.getString("week_list");
-                List<Short> weekOfList=new ArrayList<>();
-                for (short i = 0; i < week_list.length(); i++) {
-                    if(week_list.charAt(i)=='1'){
-                        weekOfList.add((short) (i + 1));
-                    }
-                }
-                c1.weekList=weekOfList;
                 int day_of_week=rs.getInt("day_of_week");
-                c1.dayOfWeek= DayOfWeek.of(day_of_week);
-
-                //may be null
-
                 int user_id=rs.getInt("id");
                 String first_name=rs.getString("first_name");
                 String last_name=rs.getString("last_name");
-                if (first_name!=null){
-                    Instructor instructor=new Instructor();
-                    instructor.id=user_id;
-                    instructor.fullName=Util.getName(first_name,last_name);
-
-                    c1.instructor=instructor;
-                }else{
-                    c1.instructor=null;
-                }
-
-                c1.location=rs.getString("loc");
+                String location=rs.getString("loc");
+                CourseSectionClass c1=Util.getCourseSectionClass(class_id,class_begin,class_end,week_list,day_of_week,user_id,first_name,last_name,location);
+//                CourseSectionClass c1=new CourseSectionClass();
+//                c1.id=rs.getInt("class_id");
+//                c1.classEnd= (short) rs.getInt("class_end");
+//                c1.classBegin= (short) rs.getInt("class_begin");
+//                String week_list=rs.getString("week_list");
+//                List<Short> weekOfList=new ArrayList<>();
+//                for (short i = 0; i < week_list.length(); i++) {
+//                    if(week_list.charAt(i)=='1'){
+//                        weekOfList.add((short) (i + 1));
+//                    }
+//                }
+//                c1.weekList=weekOfList;
+//                int day_of_week=rs.getInt("day_of_week");
+//                c1.dayOfWeek= DayOfWeek.of(day_of_week);
+//
+//                //may be null
+//
+//                int user_id=rs.getInt("id");
+//                String first_name=rs.getString("first_name");
+//                String last_name=rs.getString("last_name");
+//                if (first_name!=null){
+//                    Instructor instructor=new Instructor();
+//                    instructor.id=user_id;
+//                    instructor.fullName=Util.getName(first_name,last_name);
+//
+//                    c1.instructor=instructor;
+//                }else{
+//                    c1.instructor=null;
+//                }
+//
+//                c1.location=rs.getString("loc");
                 con.add(c1);
             }
             if(!con.isEmpty())
@@ -396,7 +409,7 @@ public class ReferenceCourseService implements CourseService {
     public CourseSection getCourseSectionByClass(int classId) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection()) {
             PreparedStatement stmt = connection.prepareStatement(
-                    "select section.sec_id,course_id,semester_id,sec_name,tot_capacity,left_capacity\n" +
+                    "select section.sec_id,sec_name,tot_capacity,left_capacity\n" +
                     "from section\n" +
                     "join\n" +
                     "(select sec_id\n" +
@@ -408,16 +421,16 @@ public class ReferenceCourseService implements CourseService {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()){
                 int sec_id=rs.getInt("sec_id");
-                String course_id=rs.getString("course_id");
                 String sec_name=rs.getString("sec_name");
                 int tot_capacity=rs.getInt("tot_capacity");
                 int left_capacity=rs.getInt("left_capacity");
-                CourseSection c1=new CourseSection();
+//                CourseSection c1=new CourseSection();
+                CourseSection c1=Util.getCourseSection(sec_id,sec_name,tot_capacity,left_capacity);
 
-                c1.id=sec_id;
-                c1.name=sec_name;
-                c1.totalCapacity=tot_capacity;
-                c1.leftCapacity=left_capacity;
+//                c1.id=sec_id;
+//                c1.name=sec_name;
+//                c1.totalCapacity=tot_capacity;
+//                c1.leftCapacity=left_capacity;
 
                 return c1;
             }else{

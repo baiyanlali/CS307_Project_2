@@ -44,6 +44,15 @@ public class ReferenceStudentService implements StudentService {
             stmt.setInt(2, semesterId);
 //            stmt.setString(3,);
             ResultSet rs = stmt.executeQuery();
+            List<CourseSearchEntry> con=new ArrayList<>();
+            while (rs.next()){
+                CourseSearchEntry cse=new CourseSearchEntry();
+                Course course=new Course();
+                CourseSection courseSection=new CourseSection();
+                List<CourseSectionClass> courseSectionClasses=new ArrayList<>();
+            }
+            //no need to throw exception
+            return con;
         } catch (SQLException e) {
             e.printStackTrace();
         }
