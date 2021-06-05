@@ -38,10 +38,40 @@ public class CourseServiceTest {
 
 //        ms.removeMajor(12);
 
-//        ms.addMajorCompulsoryCourse(11, "YSQ101");
-//        ms.addMajorElectiveCourse(11, "MARS103");
+        ms.addMajorCompulsoryCourse(11, "YSQ101");
+        ms.addMajorElectiveCourse(11, "MARS103");
+        CourseService cs=new ReferenceCourseService();
+        cs.addCourse("PH101A", "小等物理上",4,64, Course.CourseGrading.HUNDRED_MARK_SCORE, null);
+        cs.addCourse("PH101B", "小等物理下", 4, 64, Course.CourseGrading.HUNDRED_MARK_SCORE, null);
+        cs.addCourse("G173A", "地理A", 3, 32, Course.CourseGrading.HUNDRED_MARK_SCORE, null);
+        cs.addCourse("CS111", "计算机导论1", 3, 64, Course.CourseGrading.PASS_OR_FAIL, null);
+        cs.addCourse("CS112", "计算机导论2", 3, 64, Course.CourseGrading.PASS_OR_FAIL, null);
+        cs.addCourse("CS113", "计算机导论3", 3, 64, Course.CourseGrading.PASS_OR_FAIL, null);
+//1
+        int a1=cs.addCourseSection("PH101A",1,"英文一般",40);
+        int a2=cs.addCourseSection("PH101A",1,"英文二般",40);
+        int a3=cs.addCourseSection("PH101A",2,"英文三般",20);
+//2
+        int b1=cs.addCourseSection("PH101B",2,"英文一般",40);
+        int b2=cs.addCourseSection("PH101B",2,"英文二般",40);
+        int b3=cs.addCourseSection("PH101B",1,"英文三般",20);
+//3
+        int c1=cs.addCourseSection("G173A",1,"中英文一般",80);
+        int c2=cs.addCourseSection("G173A",2,"中英文一般",80);
+//4
+        int d1=cs.addCourseSection("CS111",1,"中英文一般",100);
+        int d2=cs.addCourseSection("CS111",1,"英文一般",50);
+        int d3=cs.addCourseSection("CS112",1,"中英文一般",100);
+        int d4=cs.addCourseSection("CS112",1,"英文一般",50);
+        int d5=cs.addCourseSection("CS113",1,"中英文一般",100);
+        int d6=cs.addCourseSection("CS113",1,"英文一般",50);
 
-        }
+        //1
+//        cs.addCourseSectionClass(a1,1,dow,weeklist,(short) 1,(short) 3,"半人马星")
+
+
+
+    }
 
 
 //        cs.removeCourse("MIAO101");
