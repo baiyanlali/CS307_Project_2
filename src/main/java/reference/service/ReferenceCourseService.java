@@ -188,8 +188,7 @@ public class ReferenceCourseService implements CourseService {
                 int classID = rs.getInt("class_id");
                 removeCourseSectionClass(classID);
             }
-            Statement stat= connection.createStatement();
-            stat.execute(String.format("delete from learning_info where sec_id = \'%s\'",sectionId));
+
 
             PreparedStatement stmt=connection.prepareStatement("delete from section where sec_id=?");
             stmt.setInt(1,sectionId);
@@ -210,6 +209,10 @@ public class ReferenceCourseService implements CourseService {
             PreparedStatement stmt = connection.prepareStatement("delete from teaching_info where class_id=?");
             stmt.setInt(1,classId);
             stmt.execute();
+
+            Statement stat= connection.createStatement();
+            stat.execute(String.format("delete from learning_info where sid = \'%s\'",classId));
+
             stmt=connection.prepareStatement("delete from class where class_id=?");
             stmt.setInt(1,classId);
             stmt.execute();
@@ -433,7 +436,8 @@ public class ReferenceCourseService implements CourseService {
             PreparedStatement stmt = connection.prepareStatement(
                     "select  case m.major_id when null then false else true end as has_major  ,id,first_name,last_name,enroll_date,major_name,m.major_id,d.dept_id,dept_name\n" +
                             "from section as s\n" +
-                            "left join learning_info li on s.sec_id = li.sec_id\n" +
+                            "left join class c on s.sec_id = c.sec_id\n" +
+                            "left join learning_info li on s.sec_id = li.sid\n" +
                             "left join users u on u.id = li.sid\n" +
                             "left join student_info si on u.id = si.sid\n" +
                             "left join major m on si.major_id = m.major_id\n" +
