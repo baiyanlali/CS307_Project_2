@@ -299,7 +299,7 @@ public class ReferenceStudentService implements StudentService {
              PreparedStatement stmt = connection.prepareStatement("call getEnrolledCoursesAndGrades(?, ?)")) {
             ResultSet rs = stmt.executeQuery();
             stmt.setInt(1, studentId);
-            if(semesterId !=null) {
+//            if(semesterId !=null) {
 //                String g = grade.when(new Grade.Cases<String>() {
 //                    @Override
 //                    public String match(PassOrFailGrade self) {
@@ -314,12 +314,12 @@ public class ReferenceStudentService implements StudentService {
 //                        return String.valueOf(self.mark);
 //                    }
 //                });
-                stmt.execute();
-//              rs.
-            }else{
-                stmt.setString(2, null);
-                stmt.execute();
-            }
+//                stmt.execute();
+//
+//            }else{
+//                stmt.setString(2, null);
+//                stmt.execute();
+//            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

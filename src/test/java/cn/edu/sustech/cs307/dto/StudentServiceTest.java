@@ -15,6 +15,7 @@ public class StudentServiceTest {
 //        var v1 = ss.getStudentMajor(11911311);
 //        var v1=ss.enrollCourse(11911311,1);
 //        var v2 = ss.getStudentMajor(11911311);
+
         ss.dropCourse(11911311,7);
         ss.dropCourse(11911311,8);
     }
