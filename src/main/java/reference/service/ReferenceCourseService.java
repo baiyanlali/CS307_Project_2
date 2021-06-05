@@ -61,7 +61,7 @@ public class ReferenceCourseService implements CourseService {
                         String[] children = self.terms.stream()
                                 .map(term -> term.when(this))
                                 .toArray(String[]::new);
-                        return '(' + String.join(" && ", children) + ')';
+                        return '(' + String.join(" & ", children) + ')';
                     }
 
                     @Override
@@ -69,12 +69,12 @@ public class ReferenceCourseService implements CourseService {
                         String[] children = self.terms.stream()
                                 .map(term -> term.when(this))
                                 .toArray(String[]::new);
-                        return '(' + String.join(" || ", children) + ')';
+                        return '(' + String.join(" | ", children) + ')';
                     }
 
                     @Override
                     public String match(CoursePrerequisite self) {
-                        return "%d";
+                        return "%s";
                     }
                 });
 

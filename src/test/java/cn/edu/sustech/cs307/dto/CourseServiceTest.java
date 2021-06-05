@@ -6,8 +6,10 @@ import cn.edu.sustech.cs307.dto.prerequisite.OrPrerequisite;
 import cn.edu.sustech.cs307.dto.prerequisite.Prerequisite;
 import cn.edu.sustech.cs307.service.CourseService;
 import cn.edu.sustech.cs307.service.MajorService;
+import cn.edu.sustech.cs307.service.StudentService;
 import reference.service.ReferenceCourseService;
 import reference.service.ReferenceMajorService;
+import reference.service.ReferenceStudentService;
 
 import java.time.DayOfWeek;
 import java.util.ArrayList;
@@ -21,20 +23,23 @@ public class CourseServiceTest {
 //                new CoursePrerequisite("MA101B")
 //        ));
 
+        StudentService ss=new ReferenceStudentService();
+        System.out.println(ss.passedPrerequisitesForCourse(11911311, "MA102A"));
+
 
 
 //        Prerequisite algebra = new CoursePrerequisite("MA103A");
 //        Prerequisite prerequisite = new AndPrerequisite(List.of(calculus, algebra));
 //
 //        CourseService cs=new ReferenceCourseService();
-        MajorService ms = new ReferenceMajorService();
+//        MajorService ms = new ReferenceMajorService();
 //        System.out.println(ms.addMajor("摩尔日报专业", 2));
 //        System.out.println(ms.addMajor("摩尔警察专业", 2));
 
 //        ms.removeMajor(12);
 
-        ms.addMajorCompulsoryCourse(11, "YSQ101");
-        ms.addMajorElectiveCourse(11, "MARS103");
+//        ms.addMajorCompulsoryCourse(11, "YSQ101");
+//        ms.addMajorElectiveCourse(11, "MARS103");
 
         }
 

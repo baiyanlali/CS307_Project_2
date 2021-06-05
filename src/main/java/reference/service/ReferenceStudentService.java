@@ -137,42 +137,31 @@ public class ReferenceStudentService implements StudentService {
         }catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     @Override
     public boolean passedPrerequisitesForCourse(int studentId, String courseId) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();){
-             PreparedStatement stmt = connection.prepareStatement("select pre_list(?, ?)");
-             PreparedStatement patterQuery=connection.prepareStatement("select pre_pattern from course where course_id=?");
+             PreparedStatement stmt = connection.prepareStatement("select check_pre(?,?)");
+
 
              //get list
-            stmt.setInt(1, studentId);
-            stmt.setString(2, courseId);
-            ArrayList<Integer> learn_list = new ArrayList<Integer>();
+            stmt.setString(1, courseId);
+            stmt.setInt(2, studentId);
             ResultSet rs = stmt.executeQuery();
+            int result=0;
             if(rs.next()){
-                learn_list.add(rs.getInt("pre_list"));
+                result=rs.getInt("check_pre");
             }
 
-            //get pattern
-            patterQuery.setString(1,courseId);
-            ResultSet rs2 = patterQuery.executeQuery();
-            String pattern=rs2.getString("pre_pattern");
-
-
-            //TODO: test this
-            String evaluate=String.format(pattern, learn_list.toArray());
-
-            ScriptEngineManager manager=new ScriptEngineManager();
-            ScriptEngine engine=manager.getEngineByName("js");
-            int result=(Integer) engine.eval(evaluate);
             if(result==1){
                 return true;
             }else {
                 return false;
             }
 
-        } catch (SQLException | ScriptException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
