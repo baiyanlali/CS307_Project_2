@@ -61,58 +61,72 @@ public class ReferenceStudentService implements StudentService {
                  ans=EnrollResult.COURSE_NOT_FOUND;
                  return ans;
              }
-            PreparedStatement stmt1=connection.prepareStatement("select COURSE_IS_FULL(?)");
-            stmt1.setInt(1, sectionId);
-            stmt1.execute();
-            rs = stmt1.executeQuery();
-            judge=rs.next();
-            if(judge){
-                ans=EnrollResult.COURSE_IS_FULL;
-                return ans;
-            }
-            PreparedStatement stmt2=connection.prepareStatement("select ALREADY_ENROLLED(?,?)");
+            PreparedStatement stmt2=connection.prepareStatement("select ALREADY_ENROLLED(?,?) as judge");
             stmt2.setInt(1, sectionId);
             stmt2.setInt(2, studentId);
             stmt2.execute();
             rs = stmt2.executeQuery();
-            judge=rs.next();
-            if(judge){
-                ans=EnrollResult.ALREADY_ENROLLED;
-                return ans;
+            if(rs.next()) {
+                judge = rs.getBoolean("judge");
+                if (judge) {
+                    ans = EnrollResult.ALREADY_ENROLLED;
+                    return ans;
+                }
             }
-            PreparedStatement stmt3=connection.prepareStatement("select ALREADY_PASSED(?,?)");
+            PreparedStatement stmt3=connection.prepareStatement("select ALREADY_PASSED(?,?) as judge");
             stmt3.setInt(1, sectionId);
             stmt3.setInt(2, studentId);
             stmt3.execute();
             rs = stmt3.executeQuery();
-            judge=rs.next();
-            if(judge){
-                ans=EnrollResult.ALREADY_PASSED;
-                return ans;
+            if(rs.next()) {
+                judge = rs.getBoolean("judge");
+                if (judge) {
+                    ans = EnrollResult.ALREADY_PASSED;
+                    return ans;
+                }
             }
-            PreparedStatement stmt4=connection.prepareStatement("select COURSE_CONFLICT_FOUND(?,?)");
+            PreparedStatement stmt4=connection.prepareStatement("select COURSE_CONFLICT_FOUND(?,?) as judge");
             stmt4.setInt(1, sectionId);
             stmt4.setInt(2, studentId);
             stmt4.execute();
             rs = stmt4.executeQuery();
-            judge=rs.next();
-            if(judge){
-                ans=EnrollResult.COURSE_CONFLICT_FOUND;
-                return ans;
+            if(rs.next()){
+                judge=rs.getBoolean("judge");
+                if(judge){
+                    ans=EnrollResult.COURSE_CONFLICT_FOUND;
+                    return ans;
+                }
             }
-            PreparedStatement stmt5=connection.prepareStatement("select getCoursebySection(?,?)");
+
+            PreparedStatement stmt5=connection.prepareStatement("select getCoursebySection(?) as trans");
             stmt5.setInt(1, sectionId);
-            stmt4.setInt(2, studentId);
-            stmt4.execute();
-            rs = stmt4.executeQuery();
-            judge=rs.next();
-            if(judge){
-                ans=EnrollResult.COURSE_CONFLICT_FOUND;
-                return ans;
+            stmt5.execute();
+            rs = stmt5.executeQuery();
+            if(rs.next()){
+                String courseid=rs.getString("trans");
+                judge=passedPrerequisitesForCourse(studentId,courseid);
+                if(!judge){
+                    ans=EnrollResult.PREREQUISITES_NOT_FULFILLED;
+                    return ans;
+                }
             }
-            boolean judge1=passedPrerequisitesForCourse(studentId,)
 
+            PreparedStatement stmt1=connection.prepareStatement("select COURSE_IS_FULL(?) as judge");
+            stmt1.setInt(1, sectionId);
+            stmt1.execute();
+            rs = stmt1.executeQuery();
+            if(rs.next()) {
+                judge=rs.getBoolean("judge");
+                if (judge) {
+                    ans = EnrollResult.COURSE_IS_FULL;
+                    return ans;
+                }
+            }
 
+            PreparedStatement stmt6=connection.prepareStatement("select enrollCourse(?,?) ");
+            stmt6.setInt(1, studentId);
+            stmt6.setInt(2, sectionId);
+            stmt6.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
