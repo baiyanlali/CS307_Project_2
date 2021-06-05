@@ -125,7 +125,6 @@ public class ReferenceStudentService implements StudentService {
                     return ans;
                 }
             }
-
             PreparedStatement stmt6=connection.prepareStatement("select enrollCourse(?,?) ");
             stmt6.setInt(1, studentId);
             stmt6.setInt(2, sectionId);
@@ -157,7 +156,7 @@ public class ReferenceStudentService implements StudentService {
     @Override
     public void addEnrolledCourseWithGrade(int studentId, int sectionId, @Nullable Grade grade) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("call addEnrolledCourseWithGrade(?, ?, ?)")) {
+             PreparedStatement stmt = connection.prepareStatement("select addEnrolledCourseWithGrade(?, ?, ?)")) {
             stmt.setInt(1, studentId);
             stmt.setInt(2, sectionId);
             if(grade!=null){
@@ -188,12 +187,62 @@ public class ReferenceStudentService implements StudentService {
 
     @Override
     public void setEnrolledCourseGrade(int studentId, int sectionId, Grade grade) {
+        try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
+             PreparedStatement stmt = connection.prepareStatement("call setEnrolledCourseWithGrade(?, ?, ?)")) {
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, sectionId);
+            String g = grade.when(new Grade.Cases<String>() {
+                    @Override
+                    public String match(PassOrFailGrade self) {
+                        if(self==PassOrFailGrade.PASS)
+                            return "p";
+                        else
+                            return "f";
+                    }
 
+                    @Override
+                    public String match(HundredMarkGrade self) {
+                        return String.valueOf(self.mark);
+                    }
+                });
+            stmt.setString(3,g);
+            stmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public Map<Course, Grade> getEnrolledCoursesAndGrades(int studentId, @Nullable Integer semesterId) {
-        return null;
+        Map<Course,Grade> a=new HashMap<>();
+        try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
+             PreparedStatement stmt = connection.prepareStatement("call getEnrolledCoursesAndGrades(?, ?)")) {
+            ResultSet rs = stmt.executeQuery();
+            stmt.setInt(1, studentId);
+            if(semesterId !=null) {
+                String g = grade.when(new Grade.Cases<String>() {
+                    @Override
+                    public String match(PassOrFailGrade self) {
+                        if (self == PassOrFailGrade.PASS)
+                            return "p";
+                        else
+                            return "f";
+                    }
+
+                    @Override
+                    public String match(HundredMarkGrade self) {
+                        return String.valueOf(self.mark);
+                    }
+                });
+                stmt.execute();
+              rs.
+            }else{
+                stmt.setString(2, null);
+                stmt.execute();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
