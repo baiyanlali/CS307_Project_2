@@ -51,7 +51,6 @@ public class ReferenceStudentService implements StudentService {
     @Override
     public EnrollResult enrollCourse(int studentId, int sectionId) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-
              PreparedStatement stmt = connection.prepareStatement("call COURSE_FOUND(?) ")) {
             stmt.setInt(1, sectionId);
             stmt.execute();
@@ -137,6 +136,7 @@ public class ReferenceStudentService implements StudentService {
         }catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     @Override
