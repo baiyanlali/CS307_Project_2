@@ -5,6 +5,7 @@ import cn.edu.sustech.cs307.dto.*;
 import cn.edu.sustech.cs307.dto.grade.Grade;
 import cn.edu.sustech.cs307.dto.grade.HundredMarkGrade;
 import cn.edu.sustech.cs307.dto.grade.PassOrFailGrade;
+import cn.edu.sustech.cs307.exception.EntityNotFoundException;
 import cn.edu.sustech.cs307.service.StudentService;
 
 import javax.annotation.Nullable;
@@ -42,7 +43,16 @@ public class ReferenceStudentService implements StudentService {
             stmt.setInt(1, studentId);
             stmt.setInt(2, semesterId);
 //            stmt.setString(3,);
-            stmt.execute();
+            ResultSet rs = stmt.executeQuery();
+            List<CourseSearchEntry> con=new ArrayList<>();
+            while (rs.next()){
+                CourseSearchEntry cse=new CourseSearchEntry();
+                Course course=new Course();
+                CourseSection courseSection=new CourseSection();
+                List<CourseSectionClass> courseSectionClasses=new ArrayList<>();
+            }
+            //no need to throw exception
+            return con;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -331,6 +341,33 @@ public class ReferenceStudentService implements StudentService {
 
     @Override
     public Major getStudentMajor(int studentId) {
-        return null;
+
+        try (Connection connection = SQLDataSource.getInstance().getSQLConnection()) {
+            PreparedStatement stmt = connection.prepareStatement("select m.dept_id, dept_name,m.major_id, major_name\n" +
+                    "            from department\n" +
+                    "            join major m on department.dept_id = m.dept_id\n" +
+                    "            join student_info si on m.major_id = si.major_id\n" +
+                    "            where sid=?;");
+
+            stmt.setInt(1,studentId);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()) {
+                Department d=new Department();
+                Major m=new Major();
+                m.name=rs.getString("major_name");
+                m.id=rs.getInt("major_id");
+                d.name=rs.getString("dept_name");
+                d.id=rs.getInt("dept_id");
+                m.department=d;
+                return m;
+            }else{
+                throw new EntityNotFoundException();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
     }
 }
