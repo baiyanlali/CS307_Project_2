@@ -44,9 +44,37 @@ public class ReferenceStudentService implements StudentService {
             int pageIndex
     ) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("select searchCourse(?,?,?,?) ")) {
-            stmt.setInt(1, studentId);
-            stmt.setInt(2, semesterId);
+             PreparedStatement stmt = connection.prepareStatement("select search_course(?,?,?,?,?,?," +
+                                                                                            "?,?,?,?,?," +
+                                                                                            "?,?,?,?,?) ")) {
+            stmt.setInt(    1, studentId);
+            stmt.setInt(    2, semesterId);
+            stmt.setString( 3,searchCid);
+
+            String courseName=searchName.substring(0,searchName.indexOf('['));
+            String sectionName=searchName.substring(searchName.indexOf('[')+1,searchName.lastIndexOf(']'));
+            stmt.setString( 4,courseName);
+            stmt.setString( 5,sectionName);
+
+            stmt.setString( 6,searchInstructor);
+            stmt.setInt(    7,searchDayOfWeek.getValue());
+            stmt.setShort(  8,searchClassTime);
+            StringBuffer location=new StringBuffer();
+            for (String s: searchClassLocations) {
+                location.append(s);
+                location.append(',');
+            }
+            stmt.setString(9,location.toString());
+            stmt.setInt(10,searchCourseType.ordinal());
+
+//            stmt.setString(8,);
+//            stmt.setBoolean(9,searchCourseType);
+            stmt.setBoolean(11,ignoreConflict);
+            stmt.setBoolean(12,ignoreFull);
+            stmt.setBoolean(13,ignorePassed);
+            stmt.setBoolean(14,ignoreMissingPrerequisites);
+            stmt.setInt(    14,pageSize);
+            stmt.setInt(    15,pageIndex);
             ResultSet rs = stmt.executeQuery();
 
             List<CourseSearchEntry> con=new ArrayList<>();
@@ -79,6 +107,7 @@ public class ReferenceStudentService implements StudentService {
 
                     //Create Course Section
 
+
                     sec_id                  =       rs.getInt(      "sec_id");
                     String  name            =       rs.getString(   "sec_name");
                     int     tot_capacity    =       rs.getInt(      "tot_capacity");
@@ -93,9 +122,13 @@ public class ReferenceStudentService implements StudentService {
 
                     cse.sectionClasses=courseSectionClasses;
 
-                    conflictedCourses.addAll(Arrays.asList((String[]) rs.getArray("conflicted_courses").getArray()));
+                    conflictedCourses.addAll(Arrays.asList((String[]) rs.getArray("conflict_courses").getArray()));
 
-
+                    String[] classes = (String[])rs.getArray("class_info").getArray();
+                    for (String str:classes
+                         ) {
+                        courseSectionClasses.add(Util.getCourseSectionClass(str));
+                    }
 
 
 //                int     class_id        =       rs.getInt(      "class_id");
@@ -413,11 +446,12 @@ public class ReferenceStudentService implements StudentService {
     public Major getStudentMajor(int studentId) {
 
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection()) {
-            PreparedStatement stmt = connection.prepareStatement("select m.dept_id, dept_name,m.major_id, major_name\n" +
-                    "            from department\n" +
-                    "            join major m on department.dept_id = m.dept_id\n" +
-                    "            join student_info si on m.major_id = si.major_id\n" +
-                    "            where sid=?;");
+            PreparedStatement stmt = connection.prepareStatement(
+                    "select m.dept_id, dept_name,m.major_id, major_name\n" +
+                    "from department\n" +
+                    "join major m on department.dept_id = m.dept_id\n" +
+                    "join student_info si on m.major_id = si.major_id\n" +
+                    "where sid=?;");
 
             stmt.setInt(1,studentId);
 
