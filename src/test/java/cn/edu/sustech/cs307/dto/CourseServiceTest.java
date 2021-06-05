@@ -5,7 +5,9 @@ import cn.edu.sustech.cs307.dto.prerequisite.CoursePrerequisite;
 import cn.edu.sustech.cs307.dto.prerequisite.OrPrerequisite;
 import cn.edu.sustech.cs307.dto.prerequisite.Prerequisite;
 import cn.edu.sustech.cs307.service.CourseService;
+import cn.edu.sustech.cs307.service.MajorService;
 import reference.service.ReferenceCourseService;
+import reference.service.ReferenceMajorService;
 
 import java.time.DayOfWeek;
 import java.util.ArrayList;
@@ -14,27 +16,42 @@ import java.util.List;
 
 public class CourseServiceTest {
     public static void main(String[] args) {
-        Prerequisite calculus = new OrPrerequisite(List.of(
-                new CoursePrerequisite("MA101A"),
-                new CoursePrerequisite("MA101B")
-        ));
-        Prerequisite algebra = new CoursePrerequisite("MA103A");
-        Prerequisite prerequisite = new AndPrerequisite(List.of(calculus, algebra));
+//        Prerequisite calculus = new OrPrerequisite(List.of(
+//                new CoursePrerequisite("MA101A"),
+//                new CoursePrerequisite("MA101B")
+//        ));
 
-        CourseService cs=new ReferenceCourseService();
-        cs.removeCourse("MIAO101");
-        cs.addCourse("MIAO101","猫猫学导论",5,32, Course.CourseGrading.PASS_OR_FAIL,null);
-        int sec_id = cs.addCourseSection("MIAO101",1,"猫猫学期末学期~",20);
-        DayOfWeek dow=DayOfWeek.FRIDAY;
-        List<Short> weeklist=new ArrayList<>();
-        
-//        cs.addCourseSectionClass(sec_id,1);
-        Course ccc = cs.getCourseBySection(999);
-        System.out.println(ccc);
-        cs.addCourse("MA101A", "高等数学上",4,64, Course.CourseGrading.HUNDRED_MARK_SCORE, null);
-        cs.addCourse("MA101B", "低等数学上", 4, 64, Course.CourseGrading.HUNDRED_MARK_SCORE, null);
-        cs.addCourse("MA103A", "线性代数", 4, 64, Course.CourseGrading.HUNDRED_MARK_SCORE, null);
-        cs.addCourse("MA102A", "超等数学", 4, 64, Course.CourseGrading.HUNDRED_MARK_SCORE, prerequisite);
+
+
+//        Prerequisite algebra = new CoursePrerequisite("MA103A");
+//        Prerequisite prerequisite = new AndPrerequisite(List.of(calculus, algebra));
+//
+//        CourseService cs=new ReferenceCourseService();
+        MajorService ms = new ReferenceMajorService();
+//        System.out.println(ms.addMajor("摩尔日报专业", 2));
+//        System.out.println(ms.addMajor("摩尔警察专业", 2));
+
+//        ms.removeMajor(12);
+
+        ms.addMajorCompulsoryCourse(11, "YSQ101");
+        ms.addMajorElectiveCourse(11, "MARS103");
+
+        }
+
+
+//        cs.removeCourse("MIAO101");
+//        cs.addCourse("MIAO101","猫猫学导论",5,32, Course.CourseGrading.PASS_OR_FAIL,null);
+//        int sec_id = cs.addCourseSection("MIAO101",1,"猫猫学期末学期~",20);
+//        DayOfWeek dow=DayOfWeek.FRIDAY;
+//        List<Short> weeklist=new ArrayList<>();
+//
+////        cs.addCourseSectionClass(sec_id,1);
+//        Course ccc = cs.getCourseBySection(999);
+//        System.out.println(ccc);
+//        cs.addCourse("MA101A", "高等数学上",4,64, Course.CourseGrading.HUNDRED_MARK_SCORE, null);
+//        cs.addCourse("MA101B", "低等数学上", 4, 64, Course.CourseGrading.HUNDRED_MARK_SCORE, null);
+//        cs.addCourse("MA103A", "线性代数", 4, 64, Course.CourseGrading.HUNDRED_MARK_SCORE, null);
+//        cs.addCourse("MA102A", "超等数学", 4, 64, Course.CourseGrading.HUNDRED_MARK_SCORE, prerequisite);
 //        cs.removeCourse("MA102A");
 //        cs.removeCourse("MA101A");
 //        cs.removeCourse("MA101B");
@@ -73,4 +90,4 @@ public class CourseServiceTest {
 //        System.out.println(ccc);
 
     }
-}
+
