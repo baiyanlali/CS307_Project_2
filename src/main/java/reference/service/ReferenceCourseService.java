@@ -87,7 +87,7 @@ public class ReferenceCourseService implements CourseService {
                     pre_courses_list.execute();
                 }
             }else {
-                stmt.setString(6, null);
+                stmt.setNull(6, Types.NULL);
                 stmt.execute();
             }
 
