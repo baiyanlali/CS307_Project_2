@@ -3,6 +3,8 @@ package reference.service;
 import cn.edu.sustech.cs307.database.SQLDataSource;
 import cn.edu.sustech.cs307.dto.*;
 import cn.edu.sustech.cs307.dto.grade.Grade;
+import cn.edu.sustech.cs307.dto.grade.HundredMarkGrade;
+import cn.edu.sustech.cs307.dto.grade.PassOrFailGrade;
 import cn.edu.sustech.cs307.service.StudentService;
 
 import javax.annotation.Nullable;
@@ -110,6 +112,7 @@ public class ReferenceStudentService implements StudentService {
                     return ans;
                 }
             }
+//            boolean judge1=passedPrerequisitesForCourse(studentId,)
 
             PreparedStatement stmt1=connection.prepareStatement("select COURSE_IS_FULL(?) as judge");
             stmt1.setInt(1, sectionId);
@@ -136,10 +139,16 @@ public class ReferenceStudentService implements StudentService {
     @Override
     public void dropCourse(int studentId, int sectionId) throws IllegalStateException {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("call drop_course(?, ?)")) {
+             PreparedStatement stmt = connection.prepareStatement("select drop_course(?, ?) as success")) {
             stmt.setInt(1, studentId);
             stmt.setInt(2, sectionId);
-            stmt.execute();
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                boolean success=rs.getBoolean("success");
+                if(!success){
+                    throw new IllegalStateException();
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -148,9 +157,29 @@ public class ReferenceStudentService implements StudentService {
     @Override
     public void addEnrolledCourseWithGrade(int studentId, int sectionId, @Nullable Grade grade) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("call addEnrolledCourseWithGrade(?, ?)")) {
+             PreparedStatement stmt = connection.prepareStatement("call addEnrolledCourseWithGrade(?, ?, ?)")) {
             stmt.setInt(1, studentId);
             stmt.setInt(2, sectionId);
+            if(grade!=null){
+                String g = grade.when(new Grade.Cases<String>() {
+                    @Override
+                    public String match(PassOrFailGrade self) {
+                        if(self==PassOrFailGrade.PASS)
+                            return "p";
+                        else
+                            return "f";
+                    }
+
+                    @Override
+                    public String match(HundredMarkGrade self) {
+                        return String.valueOf(self.mark);
+                    }
+                });
+                stmt.setString(3,g);
+            }
+            else
+                stmt.setString(3,null);
+
             stmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -208,6 +237,7 @@ public class ReferenceStudentService implements StudentService {
         }catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     @Override

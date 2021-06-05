@@ -79,6 +79,8 @@ create table major(
     foreign key (dept_id) references department(dept_id)
 );
 
+alter table major alter major_name not null unique;
+
 create table major_course(
     major_id int not null ,
     course_id varchar not null ,
@@ -176,5 +178,15 @@ $$
     language plpgsql;
 
 
-
+create or replace function full_name(first_name varchar,last_name varchar )returns varchar
+as $$
+begin
+    if(first_name~'[a-zA-z]')then
+        return first_name||' '||last_name;
+    else
+        return first_name||last_name;
+    end if;
+end;
+$$
+    language plpgsql;
 
