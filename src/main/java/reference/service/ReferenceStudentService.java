@@ -10,11 +10,9 @@ import cn.edu.sustech.cs307.service.StudentService;
 
 import javax.annotation.Nullable;
 import java.sql.*;
+import java.sql.Date;
 import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.ArrayList;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -37,19 +35,91 @@ public class ReferenceStudentService implements StudentService {
     }
 
     @Override
-    public List<CourseSearchEntry> searchCourse(int studentId, int semesterId, @Nullable String searchCid, @Nullable String searchName, @Nullable String searchInstructor, @Nullable DayOfWeek searchDayOfWeek, @Nullable Short searchClassTime, @Nullable List<String> searchClassLocations, CourseType searchCourseType, boolean ignoreFull, boolean ignoreConflict, boolean ignorePassed, boolean ignoreMissingPrerequisites, int pageSize, int pageIndex) {
+    public List<CourseSearchEntry> searchCourse(
+            int studentId,                          int semesterId,
+            @Nullable String searchCid,             @Nullable String searchName,        @Nullable String searchInstructor,
+            @Nullable DayOfWeek searchDayOfWeek,    @Nullable Short searchClassTime,    @Nullable List<String> searchClassLocations,
+            CourseType searchCourseType,            boolean ignoreFull,                 boolean ignoreConflict,
+            boolean ignorePassed,                   boolean ignoreMissingPrerequisites, int pageSize,
+            int pageIndex
+    ) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
              PreparedStatement stmt = connection.prepareStatement("select searchCourse(?,?,?,?) ")) {
             stmt.setInt(1, studentId);
             stmt.setInt(2, semesterId);
-//            stmt.setString(3,);
             ResultSet rs = stmt.executeQuery();
+
             List<CourseSearchEntry> con=new ArrayList<>();
+
+            CourseSearchEntry cse=null;
+            Course c;
+            CourseSection cs;
+            List<CourseSectionClass> courseSectionClasses=null;
+
+            int sec_id=-1;
             while (rs.next()){
-                CourseSearchEntry cse=new CourseSearchEntry();
-                Course course=new Course();
-                CourseSection courseSection=new CourseSection();
-                List<CourseSectionClass> courseSectionClasses=new ArrayList<>();
+                    //start new value
+
+                    cse=new CourseSearchEntry();
+
+                    //Create Course
+                    String  c_id            =   rs.getString(   "course_id");
+                    String  c_name          =   rs.getString(   "course_name");
+                    int     credit          =   rs.getInt(      "credit");
+                    int     course_hour     =   rs.getInt(      "course_hour");
+                    int     grade_type      =   rs.getInt(      "grade_type");
+                    c=Util.getCourse(
+                            c_id,
+                            c_name,
+                            credit,
+                            course_hour,
+                            grade_type
+                    );
+                    cse.course=c;
+
+                    //Create Course Section
+
+                    sec_id                  =       rs.getInt(      "sec_id");
+                    String  name            =       rs.getString(   "sec_name");
+                    int     tot_capacity    =       rs.getInt(      "tot_capacity");
+                    int     left_capacity   =       rs.getInt(      "left_capacity");
+                    cs=Util.getCourseSection(sec_id,name,tot_capacity,left_capacity);
+                    cse.section=cs;
+
+                    //Create a new List
+                    courseSectionClasses=new ArrayList<>();
+
+                    List<String> conflictedCourses=new ArrayList<>();
+
+                    cse.sectionClasses=courseSectionClasses;
+
+                    conflictedCourses.addAll(Arrays.asList((String[]) rs.getArray("conflicted_courses").getArray()));
+
+
+
+
+//                int     class_id        =       rs.getInt(      "class_id");
+//                short   begin           =       rs.getShort(    "begin");
+//                short   end             =       rs.getShort(    "end");
+//                String  week_list       =       rs.getString(   "week_list");
+//                int     day_of_week     =       rs.getInt(      "day_of_week");
+//                int     user_id         =       rs.getInt(      "user_id");
+//                String  first_name      =       rs.getString(   "first_name");
+//                String  last_name       =       rs.getString(   "last_name");
+//                String  location        =       rs.getString(   "location");
+//                CourseSectionClass csc=Util.getCourseSectionClass(
+//                        class_id,
+//                        begin,
+//                        end,
+//                        week_list,
+//                        day_of_week,
+//                        user_id,
+//                        first_name,
+//                        last_name,
+//                        location
+//                );
+
+//                courseSectionClasses.add(csc);
             }
             //no need to throw exception
             return con;
@@ -230,22 +300,22 @@ public class ReferenceStudentService implements StudentService {
             ResultSet rs = stmt.executeQuery();
             stmt.setInt(1, studentId);
             if(semesterId !=null) {
-                String g = grade.when(new Grade.Cases<String>() {
-                    @Override
-                    public String match(PassOrFailGrade self) {
-                        if (self == PassOrFailGrade.PASS)
-                            return "p";
-                        else
-                            return "f";
-                    }
-
-                    @Override
-                    public String match(HundredMarkGrade self) {
-                        return String.valueOf(self.mark);
-                    }
-                });
+//                String g = grade.when(new Grade.Cases<String>() {
+//                    @Override
+//                    public String match(PassOrFailGrade self) {
+//                        if (self == PassOrFailGrade.PASS)
+//                            return "p";
+//                        else
+//                            return "f";
+//                    }
+//
+//                    @Override
+//                    public String match(HundredMarkGrade self) {
+//                        return String.valueOf(self.mark);
+//                    }
+//                });
                 stmt.execute();
-              rs.
+//              rs.
             }else{
                 stmt.setString(2, null);
                 stmt.execute();
@@ -253,6 +323,7 @@ public class ReferenceStudentService implements StudentService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     @Override

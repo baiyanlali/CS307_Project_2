@@ -63,12 +63,28 @@ public class Util {
             Instructor ins=new Instructor();
             ins.id=user_id;
             ins.fullName=getName(first_name, last_name);
+            csc.instructor=ins;
         }else{
             csc.instructor=null;
         }
         csc.location=location;
 
         return csc;
+    }
+
+    public static CourseSectionClass getCourseSectionClass(String data){
+        String[] strs=data.split(",");
+        int class_id=Integer.parseInt(strs[0]);
+        short begin=Short.parseShort(strs[1]);
+        short end=Short.parseShort(strs[2]);
+        String week_list=strs[3];
+        int day_of_week=Integer.parseInt(strs[4]);
+        int user_id=Integer.parseInt(strs[5]);
+        String first_name=strs[6];
+        String last_name=strs[7];
+        String location=strs[8];
+        return getCourseSectionClass(class_id,begin,end,week_list,day_of_week,user_id,first_name,last_name,location);
+
     }
 
 }
