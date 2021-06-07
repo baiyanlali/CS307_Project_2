@@ -1,2 +1,0 @@
-INSERT INTO public.semester (sem_id, sem_name, sem_begin, sem_end) VALUES (1, '期末学期', '2021-06-04', '2021-06-11');
-INSERT INTO public.semester (sem_id, sem_name, sem_begin, sem_end) VALUES (2, '期中学期', '2020-06-04', '2020-06-30');

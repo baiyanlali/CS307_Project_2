@@ -1,3 +1,0 @@
-INSERT INTO public.section (course_id, sec_id, semester_id, sec_name, tot_capacity, left_capacity) VALUES ('MARS101', 4, 1, '期末火星1', 100, 100);
-INSERT INTO public.section (course_id, sec_id, semester_id, sec_name, tot_capacity, left_capacity) VALUES ('MARS101', 5, 2, '期中火星1', 100, 100);
-INSERT INTO public.section (course_id, sec_id, semester_id, sec_name, tot_capacity, left_capacity) VALUES ('MARS102', 6, 1, '还是火星吗？', 10086, 123);
