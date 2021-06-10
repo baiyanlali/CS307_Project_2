@@ -1,2 +1,0 @@
-INSERT INTO public.users (id, first_name, last_name, classified_as) VALUES (11911309, '西', '瓜', 0);
-INSERT INTO public.users (id, first_name, last_name, classified_as) VALUES (11911310, 'dong', 'gua', 0);

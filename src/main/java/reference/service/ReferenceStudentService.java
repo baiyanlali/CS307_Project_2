@@ -9,6 +9,7 @@ import cn.edu.sustech.cs307.exception.EntityNotFoundException;
 import cn.edu.sustech.cs307.service.StudentService;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Type;
 import java.sql.*;
 import java.sql.Date;
 import java.time.DayOfWeek;
@@ -44,9 +45,55 @@ public class ReferenceStudentService implements StudentService {
             int pageIndex
     ) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("select searchCourse(?,?,?,?) ")) {
-            stmt.setInt(1, studentId);
-            stmt.setInt(2, semesterId);
+             PreparedStatement stmt = connection.prepareStatement("select search_course(?,?,?,?,?,?," +
+                                                                                            "?,?,?,?,?," +
+                                                                                            "?,?,?,?,?) ")) {
+            stmt.setInt(    1, studentId);
+            stmt.setInt(    2, semesterId);
+            if(searchCid!=null)
+                stmt.setString( 3,searchCid);
+            else stmt.setNull(3,Types.NULL);
+
+            if(searchName!=null) {
+                String courseName = searchName.substring(0, searchName.indexOf('['));
+                String sectionName = searchName.substring(searchName.indexOf('[') + 1, searchName.lastIndexOf(']'));
+                stmt.setString(4, courseName);
+                stmt.setString(5, sectionName);
+            }else{
+                stmt.setNull(4, Types.NULL);
+                stmt.setNull(5, Types.NULL);
+            }
+            if(searchInstructor!=null)
+                stmt.setString( 6,searchInstructor);
+            else stmt.setNull(6,Types.NULL);
+            if(searchDayOfWeek!=null)
+                stmt.setInt(    7,searchDayOfWeek.getValue());
+            else stmt.setNull(7,Types.NULL);
+
+            if(searchClassTime!=null)
+                stmt.setShort(  8,searchClassTime);
+            else   stmt.setNull(8,Types.NULL);
+            if(searchClassLocations!=null){
+                StringBuffer location=new StringBuffer();
+                for (String s: searchClassLocations) {
+                    location.append(s);
+                    location.append(',');
+                }
+                stmt.setString(9,location.toString());
+
+            }else{
+                stmt.setNull(9,Types.NULL);
+            }
+            stmt.setInt(10,searchCourseType.ordinal());
+
+//            stmt.setString(8,);
+//            stmt.setBoolean(9,searchCourseType);
+            stmt.setBoolean(11,ignoreConflict);
+            stmt.setBoolean(12,ignoreFull);
+            stmt.setBoolean(13,ignorePassed);
+            stmt.setBoolean(14,ignoreMissingPrerequisites);
+            stmt.setInt(    14,pageSize);
+            stmt.setInt(    15,pageIndex);
             ResultSet rs = stmt.executeQuery();
 
             List<CourseSearchEntry> con=new ArrayList<>();
@@ -79,6 +126,7 @@ public class ReferenceStudentService implements StudentService {
 
                     //Create Course Section
 
+
                     sec_id                  =       rs.getInt(      "sec_id");
                     String  name            =       rs.getString(   "sec_name");
                     int     tot_capacity    =       rs.getInt(      "tot_capacity");
@@ -93,9 +141,13 @@ public class ReferenceStudentService implements StudentService {
 
                     cse.sectionClasses=courseSectionClasses;
 
-                    conflictedCourses.addAll(Arrays.asList((String[]) rs.getArray("conflicted_courses").getArray()));
+                    conflictedCourses.addAll(Arrays.asList((String[]) rs.getArray("conflict_courses").getArray()));
 
-
+                    String[] classes = (String[])rs.getArray("class_info").getArray();
+                    for (String str:classes
+                         ) {
+                        courseSectionClasses.add(Util.getCourseSectionClass(str));
+                    }
 
 
 //                int     class_id        =       rs.getInt(      "class_id");
@@ -257,7 +309,7 @@ public class ReferenceStudentService implements StudentService {
                 stmt.setString(3,g);
             }
             else
-                stmt.setString(3,null);
+                stmt.setNull(3,Types.NULL);
 
             stmt.execute();
         } catch (SQLException e) {
@@ -297,29 +349,23 @@ public class ReferenceStudentService implements StudentService {
         Map<Course,Grade> a=new HashMap<>();
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
              PreparedStatement stmt = connection.prepareStatement("call getEnrolledCoursesAndGrades(?, ?)")) {
-            ResultSet rs = stmt.executeQuery();
             stmt.setInt(1, studentId);
-//            if(semesterId !=null) {
-//                String g = grade.when(new Grade.Cases<String>() {
-//                    @Override
-//                    public String match(PassOrFailGrade self) {
-//                        if (self == PassOrFailGrade.PASS)
-//                            return "p";
-//                        else
-//                            return "f";
-//                    }
-//
-//                    @Override
-//                    public String match(HundredMarkGrade self) {
-//                        return String.valueOf(self.mark);
-//                    }
-//                });
-//                stmt.execute();
-//
-//            }else{
-//                stmt.setString(2, null);
-//                stmt.execute();
-//            }
+            if(semesterId!=null) {
+                stmt.setInt(2,semesterId);
+            }
+            else {
+                stmt.setNull(2, Types.NULL);
+            }
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()){
+                Course c=new Course();
+                Grade g=new HundredMarkGrade((short) 1);
+                //TODO:Complete it
+                rs.getInt("courseid");
+                rs.getString("grade");
+                a.put(c,g);
+            }
+            return a;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -401,11 +447,12 @@ public class ReferenceStudentService implements StudentService {
     public Major getStudentMajor(int studentId) {
 
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection()) {
-            PreparedStatement stmt = connection.prepareStatement("select m.dept_id, dept_name,m.major_id, major_name\n" +
-                    "            from department\n" +
-                    "            join major m on department.dept_id = m.dept_id\n" +
-                    "            join student_info si on m.major_id = si.major_id\n" +
-                    "            where sid=?;");
+            PreparedStatement stmt = connection.prepareStatement(
+                    "select m.dept_id, dept_name,m.major_id, major_name\n" +
+                    "from department\n" +
+                    "join major m on department.dept_id = m.dept_id\n" +
+                    "join student_info si on m.major_id = si.major_id\n" +
+                    "where sid=?;");
 
             stmt.setInt(1,studentId);
 

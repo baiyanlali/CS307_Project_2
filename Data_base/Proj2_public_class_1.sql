@@ -1,3 +1,0 @@
-INSERT INTO public.class (sec_id, class_id, day_of_week, week_list, class_begin, class_end, loc_id) VALUES (4, 2, 5, '010101010101', 3, 5, 1);
-INSERT INTO public.class (sec_id, class_id, day_of_week, week_list, class_begin, class_end, loc_id) VALUES (4, 3, 4, '101010101010', 1, 3, 1);
-INSERT INTO public.class (sec_id, class_id, day_of_week, week_list, class_begin, class_end, loc_id) VALUES (6, 4, 1, '111111111111', 4, 5, 1);
