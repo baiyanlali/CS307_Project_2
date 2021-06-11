@@ -56,7 +56,7 @@ public class ReferenceStudentService implements StudentService {
 
             if(searchName!=null) {
                 searchName.trim();
-                if (searchName == "") {
+                if (searchName.equals("")) {
                     stmt.setNull(4, Types.NULL);
                 }else{
                     searchName = searchName.replace("[","\\\\[");
