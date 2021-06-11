@@ -144,9 +144,9 @@ public class ReferenceCourseService implements CourseService {
             ArrayList<Short> weekLists=new ArrayList<>(weekList);
 //            weekLists.addAll(Arrays.asList((Short[]) weekList.toArray()));
             weekLists.sort(cmp);
-
+            howManyWeeks=32; //TODO
             int index=0;
-            for (int i = 1; i <= howManyWeeks; i++) {
+            for (int i = 1; i <= Math.max(howManyWeeks,weekLists.get(weekLists.size()-1)); i++) {
                 if(index<weekLists.size() && i==weekLists.get(index)){  //protect the margin case
                     week.append(1);
                     index++;

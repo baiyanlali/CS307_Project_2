@@ -58,12 +58,37 @@ public final class ProjectJudge {
                                         sb.append("Params:\n");
                                         sb.append(searchCourseParams.get(it));
                                         sb.append("\nError with search course\n");
+
+                                        int len=searchCourseResult.get(it).size();
+                                        sb.append("ENTRIES:\n\n");
                                         sb.append("\nEXPECT:\n");
                                         sb.append(searchCourseExpected.get(it));
                                         sb.append("\nMINE:\n");
                                         sb.append("\n");
                                         sb.append(searchCourseResult.get(it));
                                         sb.append("\n");
+                                        for (int i = 0; i < Math.min(searchCourseResult.get(it).size(),searchCourseExpected.get(it).size()) ; i++) {
+                                            var v1 = searchCourseResult.get(it).get(i);
+                                            var v2 = searchCourseExpected.get(it).get(i);
+                                            if(!v1.equals(v2)){
+                                                sb.append("\n");
+                                                sb.append(v1);
+                                                sb.append(v2);
+                                                sb.append("course:");
+                                                sb.append(v1.course.equals(v2.course));
+                                                sb.append("\nsection:");
+                                                sb.append(v1.section.equals(v2.section));
+                                                sb.append("\nsection classes:");
+                                                sb.append(v1.sectionClasses.equals(v2.sectionClasses));
+                                                sb.append("\nsection classes types:");
+                                                sb.append(v1.sectionClasses.getClass());
+                                                sb.append(":");
+                                                sb.append(v2.sectionClasses.getClass());
+                                                sb.append("\nconflict course name:");
+                                                sb.append(v1.conflictCourseNames.equals(v2.conflictCourseNames));
+                                                sb.append("\n");
+                                            }
+                                        }
                                         System.out.println(sb);
                                     }
                                     return istrue;
