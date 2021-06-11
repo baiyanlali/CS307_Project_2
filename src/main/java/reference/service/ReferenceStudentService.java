@@ -406,13 +406,13 @@ public class ReferenceStudentService implements StudentService {
     @Override
     public CourseTable getCourseTable(int studentId, Date date) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("select getCourseTable(?, ?)")) {
+             PreparedStatement stmt = connection.prepareStatement("select * from getCourseTable(?, ?)")) {
             stmt.setInt(1, studentId);
             stmt.setDate(2, date);
             ResultSet rs = stmt.executeQuery();
 //            List<CourseTable.CourseTableEntry>[] entries=new List[7];
-            Set<CourseTable.CourseTableEntry>[] entries=new Set[7];
-            for (int i = 0; i < 7; i++) {
+            Set<CourseTable.CourseTableEntry>[] entries=new Set[8];
+            for (int i = 1; i <= 7; i++) {
                 entries[i]=new HashSet<CourseTable.CourseTableEntry>() {
                 };
             }
@@ -439,7 +439,7 @@ public class ReferenceStudentService implements StudentService {
             }
             for(int i=0;i<7;i++){
                 DayOfWeek dow=DayOfWeek.of(i+1);
-                mappp.put(dow,entries[i]);
+                mappp.put(dow,entries[i+1]);
             }
             ct.table=mappp;
             return ct;
