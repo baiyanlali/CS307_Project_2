@@ -200,7 +200,7 @@ public class ReferenceStudentService implements StudentService {
             if(sec_id!=-1)
                 con.add(cse);
             //no need to throw exception
-            return con.subList(pageIndex,pageIndex+pageSize);
+            return con.subList(pageIndex*pageSize,pageIndex*pageSize+pageSize);
         } catch (SQLException e) {
             e.printStackTrace();
         }
