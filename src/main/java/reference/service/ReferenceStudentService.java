@@ -310,19 +310,12 @@ public class ReferenceStudentService implements StudentService {
     @Override
     public void dropCourse(int studentId, int sectionId) throws IllegalStateException {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("select drop_course(?, ?) as success")) {
+             PreparedStatement stmt = connection.prepareStatement("select drop_course(?, ?)")) {
             stmt.setInt(1, studentId);
             stmt.setInt(2, sectionId);
-            ResultSet rs = stmt.executeQuery();
-            if(rs.next()){
-                boolean success=rs.getBoolean("success");
-                if(!success){
-                    throw new IllegalStateException();
-                }
-                connection.close();
-            }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new IllegalStateException();
         }
     }
 
