@@ -89,7 +89,7 @@ public final class ProjectJudge {
                                                 sb.append("\n");
                                             }
                                         }
-                                        System.out.println(sb);
+//                                        System.out.println(sb);
                                     }
                                     return istrue;
                                     }).count());
@@ -181,7 +181,18 @@ public final class ProjectJudge {
                     .collect(Collectors.toUnmodifiableList());
             result.elapsedTimeNs.addAndGet(System.nanoTime() - beforeTime);
             result.passCount.addAndGet(IntStream.range(0, courseTableParams.size()).parallel()
-                    .filter(it -> courseTableExpected.get(it).equals(courseTableResults.get(it))).count());
+                    .filter(it -> {
+                        boolean istrue = courseTableExpected.get(it).equals(courseTableResults.get(it));
+                        if(!istrue){
+                            StringBuilder sb=new StringBuilder();
+                            sb.append(courseTableExpected.get(it));
+                            sb.append("\n");
+                            sb.append(courseTableResults.get(it));
+
+                            System.out.println(sb);
+                        }
+                        return istrue;
+                    }).count());
         }
         return result;
     }
