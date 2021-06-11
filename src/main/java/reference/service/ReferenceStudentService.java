@@ -197,8 +197,10 @@ public class ReferenceStudentService implements StudentService {
                 assert courseSectionClasses != null;
                 courseSectionClasses.add(csc);
             }
+            if(sec_id!=-1)
+                con.add(cse);
             //no need to throw exception
-            return con;
+            return con.subList(pageIndex,pageIndex+pageSize);
         } catch (SQLException e) {
             e.printStackTrace();
         }
