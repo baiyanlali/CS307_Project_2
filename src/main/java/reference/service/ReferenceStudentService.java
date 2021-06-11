@@ -31,7 +31,7 @@ public class ReferenceStudentService implements StudentService {
             stmt.setDate(5,enrolledDate);
             stmt.execute();
         } catch (SQLException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -45,7 +45,7 @@ public class ReferenceStudentService implements StudentService {
             int pageIndex
     ) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("select * from super_search_course(?,?,?,?,?,?," +
+             PreparedStatement stmt = connection.prepareStatement("select * from super_search_course(?,?,?,?,?," +
                                                                                             "?,?,?,?,?," +
                                                                                             "?,?,?,?,?) ")) {
             stmt.setInt(    1, studentId);
@@ -55,41 +55,31 @@ public class ReferenceStudentService implements StudentService {
             else stmt.setNull(3,Types.NULL);
 
             if(searchName!=null) {
-                int first_index=searchName.indexOf('[');
-                //have section
-                if(first_index!=-1){
-                    String courseName = searchName.substring(0, first_index);
-                    int last_index = searchName.lastIndexOf(']');
-                    last_index=last_index==-1?searchName.length()-1:last_index;
-                    if(first_index==last_index){
-                        //判断[是否在searchName的结尾处
-                        stmt.setString(4,courseName);
-                        stmt.setNull(5,Types.NULL);
-                    }else{
-                        String sectionName = searchName.substring(first_index + 1,last_index );
-                        stmt.setString(4, courseName);
-                        stmt.setString(5, sectionName);
-                    }
+                searchName.trim();
+                if (searchName == "") {
+                    stmt.setNull(4, Types.NULL);
                 }else{
+                    searchName = searchName.replace("[","\\\\[");
+                    searchName = searchName.replace("]","\\\\]");
+                    searchName = searchName.replace("-","\\\\-");
+//                    System.out.println(searchName);
                     stmt.setString(4,searchName);
-                    stmt.setNull(5,Types.NULL);
                 }
-
             }else{
                 stmt.setNull(4, Types.NULL);
-                stmt.setNull(5, Types.NULL);
             }
             if(searchInstructor!=null)
-                stmt.setString( 6,searchInstructor);
-            else stmt.setNull(6,Types.NULL);
+                stmt.setString(5,searchInstructor);
+            else stmt.setNull(5,Types.NULL);
             if(searchDayOfWeek!=null)
-                stmt.setInt(    7,searchDayOfWeek.getValue());
-            else stmt.setNull(7,Types.NULL);
+                stmt.setInt(    6,searchDayOfWeek.getValue());
+            else stmt.setNull(6,Types.NULL);
 
             if(searchClassTime!=null)
-                stmt.setShort(  8,searchClassTime);
-            else   stmt.setNull(8,Types.NULL);
+                stmt.setShort(  7,searchClassTime);
+            else   stmt.setNull(7,Types.NULL);
             if(searchClassLocations!=null){
+
                 StringBuffer location=new StringBuffer();
                 for (int i = 0; i < searchClassLocations.size(); i++) {
                     String s = searchClassLocations.get(i);
@@ -103,24 +93,23 @@ public class ReferenceStudentService implements StudentService {
                     }
                 }
                 if(location.toString().equals(""))
-                    stmt.setNull(9,Types.NULL);
+                    stmt.setNull(8,Types.NULL);
                 else
-                    stmt.setString(9,location.toString());
+                    stmt.setString(8,location.toString());
             }else{
-                stmt.setNull(9,Types.NULL);
+                stmt.setNull(8,Types.NULL);
             }
-            stmt.setInt(10,searchCourseType.ordinal());
+            stmt.setInt(9,searchCourseType.ordinal());
 
 //            stmt.setString(8,);
 //            stmt.setBoolean(9,searchCourseType);
-            stmt.setBoolean(11,ignoreConflict);
-            stmt.setBoolean(12,ignoreFull);
-            stmt.setBoolean(13,ignorePassed);
-            stmt.setBoolean(14,ignoreMissingPrerequisites);
-            stmt.setInt(    15,pageSize);
-            stmt.setInt(    16,pageIndex);
+            stmt.setBoolean(10,ignoreConflict);
+            stmt.setBoolean(11,ignoreFull);
+            stmt.setBoolean(12,ignorePassed);
+            stmt.setBoolean(13,ignoreMissingPrerequisites);
+            stmt.setInt(    14,pageSize);
+            stmt.setInt(    15,pageIndex);
 
-            Statement sttt= connection.createStatement();
 
             ResultSet rs = stmt.executeQuery();
 
@@ -133,57 +122,77 @@ public class ReferenceStudentService implements StudentService {
 
             int sec_id=-1;
             while (rs.next()){
-                    //start new value
+                //start new value
+                if(sec_id!=rs.getInt("sec_id")) {
+                    if(sec_id!=-1)
+                        con.add(cse);
 
-                    cse=new CourseSearchEntry();
+                    cse = new CourseSearchEntry();
 
                     //Create Course
-                    String  c_id            =   rs.getString(   "course_id");
-                    String  c_name          =   rs.getString(   "course_name");
-                    int     credit          =   rs.getInt(      "credit");
-                    int     course_hour     =   rs.getInt(      "course_hour");
-                    int     grade_type      =   rs.getInt(      "grade_type");
-                    c=Util.getCourse(
+                    String c_id = rs.getString("course_id");
+                    String c_name = rs.getString("course_name");
+                    int credit = rs.getInt("credit");
+                    int course_hour = rs.getInt("course_hour");
+                    int grade_type = rs.getInt("grade_type");
+                    c = Util.getCourse(
                             c_id,
                             c_name,
                             credit,
                             course_hour,
                             grade_type
                     );
-                    cse.course=c;
+                    cse.course = c;
 
                     //Create Course Section
 
 
-                    sec_id                  =       rs.getInt(      "sec_id");
-                    String  name            =       rs.getString(   "sec_name");
-                    int     tot_capacity    =       rs.getInt(      "tot_capacity");
-                    int     left_capacity   =       rs.getInt(      "left_capacity");
-                    cs=Util.getCourseSection(sec_id,name,tot_capacity,left_capacity);
-                    cse.section=cs;
+                    sec_id = rs.getInt("sec_id");
+                    String name = rs.getString("sec_name");
+                    int tot_capacity = rs.getInt("tot_capacity");
+                    int left_capacity = rs.getInt("left_capacity");
+                    cs = Util.getCourseSection(sec_id, name, tot_capacity, left_capacity);
+                    cse.section = cs;
 
                     //Create a new List
-                    courseSectionClasses=new HashSet<>();
+                    courseSectionClasses = new HashSet<>();
 
-                    List<String> conflictedCourses=new ArrayList<>();
+                    List<String> conflictedCourses = new ArrayList<>();
 
-                    cse.sectionClasses=courseSectionClasses;
-                    Array arrs=rs.getArray("conflict_courses");
-                    if(arrs!=null){
+                    cse.sectionClasses = courseSectionClasses;
+                    Array arrs = rs.getArray("conflict_courses");
+                    if (arrs != null) {
                         String[] strs = (String[]) arrs.getArray();
-                        if(strs!=null){
+                        if (strs != null) {
                             conflictedCourses.addAll(Arrays.asList(strs));
                         }
-
                     }
+                    cse.conflictCourseNames = conflictedCourses;
+                }
 
-                    String[] classes = (String[])rs.getArray("class_info").getArray();
-                    if(classes!=null){
-                        for (String str:classes) {
-                            courseSectionClasses.add(Util.getCourseSectionClass(str));
-                        }
-                    }
+                int     class_id        =       rs.getInt(      "class_id");
+                short   begin           =       rs.getShort(    "class_begin");
+                short   end             =       rs.getShort(    "class_end");
+                String  week_list       =       rs.getString(   "week_list");
+                int     day_of_week     =       rs.getInt(      "day_of_week");
+                int     user_id         =       rs.getInt(      "instructor_id");
+                String  first_name      =       rs.getString(   "first_name");
+                String  last_name       =       rs.getString(   "last_name");
+                String  location        =       rs.getString(   "loc");
+                CourseSectionClass csc=Util.getCourseSectionClass(
+                        class_id,
+                        begin,
+                        end,
+                        week_list,
+                        day_of_week,
+                        user_id,
+                        first_name,
+                        last_name,
+                        location
+                );
 
+                assert courseSectionClasses != null;
+                courseSectionClasses.add(csc);
             }
             //no need to throw exception
             return con;
@@ -202,11 +211,17 @@ public class ReferenceStudentService implements StudentService {
             stmt.setInt(1, sectionId);
             stmt.execute();
             ResultSet rs = stmt.executeQuery();
-            judge=rs.next();
-             if(!judge){
-                 ans=EnrollResult.COURSE_NOT_FOUND;
-                 return ans;
-             }
+            if(rs.next()){
+                judge=rs.getBoolean(1);
+                if(!judge){
+                    ans=EnrollResult.COURSE_NOT_FOUND;
+                    return ans;
+                }
+            }else{
+                ans=EnrollResult.COURSE_NOT_FOUND;
+                return ans;
+            }
+//            judge=rs.next();
             PreparedStatement stmt2=connection.prepareStatement("select ALREADY_ENROLLED(?,?) as judge");
             stmt2.setInt(1, sectionId);
             stmt2.setInt(2, studentId);
@@ -274,7 +289,8 @@ public class ReferenceStudentService implements StudentService {
             stmt6.setInt(2, sectionId);
             stmt6.execute();
         } catch (SQLException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
+
         }
         return null;
     }
@@ -325,7 +341,7 @@ public class ReferenceStudentService implements StudentService {
 
             stmt.execute();
         } catch (SQLException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -352,7 +368,7 @@ public class ReferenceStudentService implements StudentService {
             stmt.setString(3,g);
             stmt.execute();
         } catch (SQLException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -379,7 +395,7 @@ public class ReferenceStudentService implements StudentService {
             }
             return a;
         } catch (SQLException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
         return null;
     }
@@ -400,16 +416,16 @@ public class ReferenceStudentService implements StudentService {
             CourseTable ct=new CourseTable();
             Map<DayOfWeek,Set<CourseTable.CourseTableEntry>> mappp=new HashMap<>();
             while (rs.next()) {
-                String coursename = rs.getString("course_name");
+                String coursename = rs.getString("name");
                 Instructor ins=new Instructor();
-                String instructorName=rs.getString("Instructor");
-                int instructorId=rs.getInt("InstructorId");
+                String instructorName=rs.getString("instructor");
+                int instructorId=rs.getInt("instructorId");
                 ins.fullName=instructorName;
                 ins.id=instructorId;
-                int classbegin=rs.getInt("class_begin");
-                int classend=rs.getInt("class_end");
-                String location=rs.getString("loc");
-                int day=rs.getInt("day_of_week");
+                int classbegin=rs.getInt("classbegin1");
+                int classend=rs.getInt("classend1");
+                String location=rs.getString("location1");
+                int day=rs.getInt("dyofweek");
                 CourseTable.CourseTableEntry cte=new CourseTable.CourseTableEntry();
                 cte.courseFullName=coursename;
                 cte.instructor=ins;
@@ -453,7 +469,7 @@ public class ReferenceStudentService implements StudentService {
             }
 
         } catch (SQLException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
             return false;
         }
     }
@@ -485,7 +501,7 @@ public class ReferenceStudentService implements StudentService {
                 throw new EntityNotFoundException();
             }
         } catch (SQLException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
             return null;
         }
 
