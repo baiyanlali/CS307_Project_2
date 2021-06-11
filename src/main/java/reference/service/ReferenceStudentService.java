@@ -448,7 +448,8 @@ public class ReferenceStudentService implements StudentService {
             }
             for(int i=0;i<7;i++){
                 DayOfWeek dow=DayOfWeek.of(i+1);
-                mappp.put(dow,Collections.unmodifiableSet(entries[i+1]));
+//                mappp.put(dow,Collections.unmodifiableSet(entries[i+1]));
+                mappp.put(dow,Set.copyOf(Arrays.asList(entries[i].toArray(CourseTable.CourseTableEntry[]::new))));
             }
             ct.table=mappp;
             return ct;
