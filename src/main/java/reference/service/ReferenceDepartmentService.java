@@ -20,6 +20,7 @@ public class ReferenceDepartmentService implements DepartmentService {
             stmt.setString(1,name);
 
             ResultSet rs = stmt.executeQuery();
+            connection.close();
             if(rs.next()){
                 return rs.getInt("dept_id");
             }
@@ -58,6 +59,8 @@ public class ReferenceDepartmentService implements DepartmentService {
             stmt=connection.prepareStatement("commit; ");
             stmt.execute();
 
+            connection.close();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -76,6 +79,7 @@ public class ReferenceDepartmentService implements DepartmentService {
                 departments.add(d);
 //                return rs.getInt("dept_id");
             }
+            connection.close();
 //            if(departments.size()!=0)
             return departments;
 //            else throw new EntityNotFoundException();
@@ -92,6 +96,7 @@ public class ReferenceDepartmentService implements DepartmentService {
             PreparedStatement stmt = connection.prepareStatement("select dept_id, dept_name from department where dept_id=?");
             stmt.setInt(1,departmentId);
             ResultSet rs = stmt.executeQuery();
+            connection.close();
             if (rs.next()){
                 Department d=new Department();
                 d.id=rs.getInt("dept_id");

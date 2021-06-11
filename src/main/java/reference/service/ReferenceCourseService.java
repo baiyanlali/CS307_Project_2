@@ -90,6 +90,8 @@ public class ReferenceCourseService implements CourseService {
                 stmt.execute();
             }
 
+            connection.close();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -106,8 +108,10 @@ public class ReferenceCourseService implements CourseService {
             stmt.setInt(4,totalCapacity);
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){
+                connection.close();
                 return rs.getInt("sem_id");
             }
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
             return -1;
@@ -161,8 +165,10 @@ public class ReferenceCourseService implements CourseService {
             stmt.setString(7,location);
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){
+                connection.close();
                 return rs.getInt("add_class");
             }
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
             return -1;
@@ -193,6 +199,7 @@ public class ReferenceCourseService implements CourseService {
 
             stmt=connection.prepareStatement("commit; ");
             stmt.execute();
+            connection.close();
             } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -221,6 +228,7 @@ public class ReferenceCourseService implements CourseService {
 
             stmt=connection.prepareStatement("commit; ");
             stmt.execute();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -242,6 +250,7 @@ public class ReferenceCourseService implements CourseService {
 
             stmt=connection.prepareStatement("commit; ");
             stmt.execute();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -273,7 +282,7 @@ public class ReferenceCourseService implements CourseService {
 
                 con.add(c1);
             }
-
+            connection.close();
             return con;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -303,9 +312,13 @@ public class ReferenceCourseService implements CourseService {
 
                 con.add(c1);
             }
+            connection.close();
             if(!con.isEmpty())
                 return con;
-            else throw new EntityNotFoundException();
+            else {
+                connection.close();
+                throw new EntityNotFoundException();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -345,10 +358,11 @@ public class ReferenceCourseService implements CourseService {
 //                            c1.grading = Course.CourseGrading.HUNDRED_MARK_SCORE;
 //                            break;
 //                    }
-
+                    connection.close();
                     return c1;
                 }
                 else{
+                    connection.close();
                     throw new EntityNotFoundException();
                 }
 
@@ -419,9 +433,14 @@ public class ReferenceCourseService implements CourseService {
 //                c1.location=rs.getString("loc");
                 con.add(c1);
             }
-            if(!con.isEmpty())
+            if(!con.isEmpty()){
+                connection.close();
                 return con;
-            else throw new EntityNotFoundException();
+            }
+            else {
+                connection.close();
+                throw new EntityNotFoundException();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -454,9 +473,10 @@ public class ReferenceCourseService implements CourseService {
 //                c1.name=sec_name;
 //                c1.totalCapacity=tot_capacity;
 //                c1.leftCapacity=left_capacity;
-
+                connection.close();
                 return c1;
             }else{
+                connection.close();
                 throw new EntityNotFoundException();
             }
 
@@ -508,9 +528,13 @@ public class ReferenceCourseService implements CourseService {
                 }
                 con.add(s);
             }
-            if(!con.isEmpty())
+            connection.close();
+            if(!con.isEmpty()) {
                 return con;
-            else throw new EntityNotFoundException();
+            }
+            else {
+                throw new EntityNotFoundException();
+            }
         }catch(SQLException e){
             e.printStackTrace();
             return null;

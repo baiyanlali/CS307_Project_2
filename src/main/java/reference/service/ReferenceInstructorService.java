@@ -24,6 +24,7 @@ public class ReferenceInstructorService implements InstructorService {
             stmt.setString(3,lastName);
 
             stmt.execute();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -36,12 +37,12 @@ public class ReferenceInstructorService implements InstructorService {
             PreparedStatement stmt = connection.prepareStatement(
                     "select sec_id, sec_name, tot_capacity, left_capacity\n" +
                     "from\n" +
-                    "     section\n" +
+                    "section\n" +
                     "where sec_id=\n" +
-                    "            (select sec_id\n" +
-                    "            from class\n" +
-                    "            join teaching_info ti on class.class_id = ti.class_id\n" +
-                    "            where instructor_id=?) and semester_id=?;");
+                    "(select sec_id\n" +
+                    "from class\n" +
+                    "join teaching_info ti on class.class_id = ti.class_id\n" +
+                    "where instructor_id=?) and semester_id=?;");
             stmt.setInt(1,instructorId);
             stmt.setInt(2,semesterId);
             ResultSet rs = stmt.executeQuery();
@@ -58,6 +59,7 @@ public class ReferenceInstructorService implements InstructorService {
                 cs.totalCapacity=tot_capacity;
                 con.add(cs);
             }
+            connection.close();
             if(!con.isEmpty()){
                 return con;
             }else{

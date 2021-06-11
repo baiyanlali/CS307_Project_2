@@ -31,6 +31,7 @@ public class ReferenceStudentService implements StudentService {
             stmt.setString(4,lastName);
             stmt.setDate(5,enrolledDate);
             stmt.execute();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -126,6 +127,7 @@ public class ReferenceStudentService implements StudentService {
             HashSet<CourseSectionClass> courseSectionClasses=null;
 
             int sec_id=-1;
+            connection.close();
             while (rs.next()){
                 //start new value
                 if(sec_id!=rs.getInt("sec_id")) {
@@ -226,6 +228,7 @@ public class ReferenceStudentService implements StudentService {
             stmt.setInt(1, sectionId);
             stmt.execute();
             ResultSet rs = stmt.executeQuery();
+
             if(rs.next()) {
                 judge = rs.getBoolean("judge");
                 if (!judge) {
@@ -299,6 +302,7 @@ public class ReferenceStudentService implements StudentService {
             stmt6.setInt(1, studentId);
             stmt6.setInt(2, sectionId);
             stmt6.execute();
+
             ans=EnrollResult.SUCCESS;
             return ans;
         } catch (SQLException e) {
@@ -314,6 +318,7 @@ public class ReferenceStudentService implements StudentService {
             stmt.setInt(1, studentId);
             stmt.setInt(2, sectionId);
             ResultSet rs = stmt.executeQuery();
+            connection.close();
             if(rs.next()){
                 boolean success=rs.getBoolean("success");
                 if(!success){
@@ -352,6 +357,7 @@ public class ReferenceStudentService implements StudentService {
                 stmt.setNull(3,Types.NULL);
 
             stmt.execute();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -379,6 +385,7 @@ public class ReferenceStudentService implements StudentService {
                 });
             stmt.setString(3,g);
             stmt.execute();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -397,6 +404,7 @@ public class ReferenceStudentService implements StudentService {
                 stmt.setNull(2, Types.NULL);
             }
             ResultSet rs = stmt.executeQuery();
+            connection.close();
             while (rs.next()){
                 Course c=new Course();
                 Grade g=new HundredMarkGrade((short) 1);
@@ -419,6 +427,7 @@ public class ReferenceStudentService implements StudentService {
             stmt.setInt(1, studentId);
             stmt.setDate(2, date);
             ResultSet rs = stmt.executeQuery();
+            connection.close();
 //            List<CourseTable.CourseTableEntry>[] entries=new List[7];
             Set<CourseTable.CourseTableEntry>[] entries=new Set[8];
             for (int i = 1; i <= 7; i++) {
@@ -470,6 +479,7 @@ public class ReferenceStudentService implements StudentService {
             stmt.setString(1, courseId);
             stmt.setInt(2, studentId);
             ResultSet rs = stmt.executeQuery();
+            connection.close();
             boolean result=false;
             if(rs.next()){
                 result=rs.getBoolean("check_pre");
@@ -501,6 +511,7 @@ public class ReferenceStudentService implements StudentService {
             stmt.setInt(1,studentId);
 
             ResultSet rs = stmt.executeQuery();
+            connection.close();
             if(rs.next()) {
                 Department d=new Department();
                 Major m=new Major();

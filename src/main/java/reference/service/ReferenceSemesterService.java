@@ -22,6 +22,8 @@ public class ReferenceSemesterService implements SemesterService {
             stmt.setDate(3,end);
 
             ResultSet rs = stmt.executeQuery();
+
+            connection.close();
             if(rs.next()){
                 return rs.getInt("sem_id");
             }
@@ -38,6 +40,8 @@ public class ReferenceSemesterService implements SemesterService {
             PreparedStatement stmt = connection.prepareStatement("select remove_semester(?)");
             stmt.setInt(1,semesterId);
             stmt.execute();
+
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -52,6 +56,7 @@ public class ReferenceSemesterService implements SemesterService {
             ResultSet rs = stmt.executeQuery();
             List<Semester> con=new ArrayList<>();
 
+            connection.close();
             while (rs.next()){
                 Semester sm=new Semester();
                 sm.id=rs.getInt("sem_id");
@@ -78,9 +83,8 @@ public class ReferenceSemesterService implements SemesterService {
             PreparedStatement stmt = connection.prepareStatement("select sem_id, sem_name, sem_begin, sem_end  from semester where sem_id=?");
             stmt.setInt(1,semesterId);
 
-
-
             ResultSet rs = stmt.executeQuery();
+            connection.close();
             if(rs.next()){
                 Semester sm=new Semester();
                 sm.id=rs.getInt("sem_id");

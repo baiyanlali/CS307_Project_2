@@ -22,6 +22,8 @@ public class ReferenceMajorService implements MajorService {
             stmt.setInt(2,departmentId);
 
             ResultSet rs = stmt.executeQuery();
+
+            connection.close();
             if(rs.next()) {
                 return rs.getInt("add_major");
             }
@@ -38,6 +40,7 @@ public class ReferenceMajorService implements MajorService {
              PreparedStatement stmt = connection.prepareStatement("select remove_major(?)")) {
             stmt.setInt(1,majorId);
             stmt.execute();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -46,9 +49,10 @@ public class ReferenceMajorService implements MajorService {
     @Override
     public List<Major> getAllMajors() {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("select major_id, major_name, d.dept_name, d.dept_id\n" +
-                     "       from major\n" +
-                     "    join department d on d.dept_id = major.dept_id")) {
+             PreparedStatement stmt = connection.prepareStatement(
+                     "select major_id, major_name, d.dept_name, d.dept_id\n" +
+                     "from major\n" +
+                     "join department d on d.dept_id = major.dept_id")) {
 
             ResultSet rs = stmt.executeQuery();
 
@@ -64,6 +68,7 @@ public class ReferenceMajorService implements MajorService {
 
                 majors.add(tm);
             }
+            connection.close();
             if(majors.isEmpty()){
             throw new EntityNotFoundException();}
             return majors;
@@ -82,7 +87,7 @@ public class ReferenceMajorService implements MajorService {
 
                 stmt.setInt(1, majorId);
                 ResultSet rs = stmt.executeQuery();
-
+                connection.close();
                 if (rs.next()) {
                     Major tm = new Major();
                     tm.id = rs.getInt("major_id");
@@ -113,6 +118,8 @@ public class ReferenceMajorService implements MajorService {
             stmt.setInt(3, 1);
             stmt.execute();
 
+            connection.close();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -127,7 +134,7 @@ public class ReferenceMajorService implements MajorService {
             stmt.setString(2, courseId);
             stmt.setInt(3, 0);
             stmt.execute();
-
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
