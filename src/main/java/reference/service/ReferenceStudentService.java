@@ -426,12 +426,12 @@ public class ReferenceStudentService implements StudentService {
             stmt.setString(1, courseId);
             stmt.setInt(2, studentId);
             ResultSet rs = stmt.executeQuery();
-            int result=0;
+            boolean result=false;
             if(rs.next()){
-                result=rs.getInt("check_pre");
+                result=rs.getBoolean("check_pre");
             }
 
-            if(result==1){
+            if(result){
                 return true;
             }else {
                 return false;
