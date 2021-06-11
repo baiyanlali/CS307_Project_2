@@ -14,8 +14,9 @@ import java.util.regex.Pattern;
 
 public class Util {
     public static String getName(String first_name,String last_name){
+        String temp=first_name.replace(" ","");
         Pattern pattern=Pattern.compile("[a-zA-Z]*");
-        boolean english_name = pattern.matcher(first_name).matches();
+        boolean english_name = pattern.matcher(temp).matches();
         if(english_name){
             return first_name.concat(" ").concat(last_name);
         }else{
