@@ -17,7 +17,7 @@ public class StudentServiceTest {
 //        var v2 = ss.getStudentMajor(11911311);
 //        var v1 = ss.searchCourse(11711621,246,null,null,null,null,null,null, StudentService.CourseType.ALL,true,true,true,true,10,0);
 //        var v2 = ss.searchCourse(11711621,246,null,null,null,null,null,null, StudentService.CourseType.ALL,true,true,true,true,10,0);
-        var v2 = ss.searchCourse(11713543,1,null,"文班",null,null,null,null, StudentService.CourseType.ALL,true,true,true,true,30,0);
+        var v2 = ss.searchCourse(11717372,24,null,null,null,null,(short)9,null, StudentService.CourseType.ALL,false,false,false,true,10,0);
         System.out.println(v2);
 //        ss.dropCourse(11911311,7);
 //        ss.dropCourse(11911311,8);
