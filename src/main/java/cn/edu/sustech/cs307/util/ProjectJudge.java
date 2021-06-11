@@ -54,9 +54,17 @@ public final class ProjectJudge {
             result.passCount.addAndGet(IntStream.range(0, searchCourseParams.size()).parallel()
                     .filter(it -> {boolean istrue = searchCourseExpected.get(it).equals(searchCourseResult.get(it));
                                     if(!istrue){
-                                        System.out.println("Error with search course");
-                                        System.out.println(searchCourseExpected.get(it));
-                                        System.out.println(searchCourseResult.get(it));
+                                        StringBuilder sb=new StringBuilder();
+                                        sb.append("Params:\n");
+                                        sb.append(searchCourseParams.get(it));
+                                        sb.append("\nError with search course\n");
+                                        sb.append("\nEXPECT:\n");
+                                        sb.append(searchCourseExpected.get(it));
+                                        sb.append("\nMINE:\n");
+                                        sb.append("\n");
+                                        sb.append(searchCourseResult.get(it));
+                                        sb.append("\n");
+                                        System.out.println(sb);
                                     }
                                     return istrue;
                                     }).count());
