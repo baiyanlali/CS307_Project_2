@@ -319,6 +319,7 @@ public class ReferenceStudentService implements StudentService {
                 if(!success){
                     throw new IllegalStateException();
                 }
+                connection.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -449,7 +450,7 @@ public class ReferenceStudentService implements StudentService {
             for(int i=0;i<7;i++){
                 DayOfWeek dow=DayOfWeek.of(i+1);
 //                mappp.put(dow,Collections.unmodifiableSet(entries[i+1]));
-                mappp.put(dow,Set.copyOf(Arrays.asList(entries[i].toArray(CourseTable.CourseTableEntry[]::new))));
+                mappp.put(dow,Set.copyOf(Arrays.asList(entries[i+1].toArray(CourseTable.CourseTableEntry[]::new))));
             }
             ct.table=mappp;
             return ct;
