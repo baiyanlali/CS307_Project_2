@@ -52,11 +52,11 @@ public class ReferenceUserService implements UserService {
                 us.id=rs.getInt("id");
                 users.add(us);
             }
-            if(!users.isEmpty()){
+//            if(!users.isEmpty()){
                 return users;
-            }else{
-                throw new EntityNotFoundException();
-            }
+//            }else{
+//                throw new EntityNotFoundException();
+//            }
         } catch (SQLException e) {
             e.printStackTrace();
             return null;

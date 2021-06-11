@@ -7,12 +7,16 @@ public class Course {
         PASS_OR_FAIL, HUNDRED_MARK_SCORE
     }
 
-    //A courseId is valid if it has been added to the system with addCourse()
-    // do not check whether it is 'CS307' or '307CS'
+    // A courseId is valid if it has been added to the system with addCourse()
+    // Do not check whether it is 'CS307' or '307CS'
     public String id;
+
     public String name;
+
     public int credit;
+
     public int classHour;
+
     public CourseGrading grading;
 
     @Override
@@ -26,6 +30,17 @@ public class Course {
         Course course = (Course) o;
         return credit == course.credit && classHour == course.classHour && id.equals(course.id)
                 && name.equals(course.name) && grading == course.grading;
+    }
+
+    @Override
+    public String toString() {
+        return "Course{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", credit=" + credit +
+                ", classHour=" + classHour +
+                ", grading=" + grading +
+                '}';
     }
 
     @Override

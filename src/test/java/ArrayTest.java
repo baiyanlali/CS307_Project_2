@@ -34,6 +34,8 @@ public class ArrayTest {
 //        String searchName="数据库压榨花生油[压榨1班]";
 //        String courseName=searchName.substring(0,searchName.indexOf('['));
 //        String sectionName=searchName.substring(searchName.indexOf('[')+1,searchName.lastIndexOf(']'));
-        System.out.println(StudentService.CourseType.CROSS_MAJOR.ordinal());
+//        System.out.println(StudentService.CourseType.CROSS_MAJOR.ordinal());
+
+        System.out.println("llll[balabala".replace("[","\\\\["));
     }
 }

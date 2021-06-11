@@ -11,6 +11,7 @@ public class CourseSection {
      * if the course name is "database principle", the name here could be "No.1 Chinese class", "No.1 English class" ...
      */
     public String name;
+
     public int totalCapacity, leftCapacity;
 
     @Override
@@ -24,6 +25,16 @@ public class CourseSection {
         CourseSection section = (CourseSection) o;
         return id == section.id && totalCapacity == section.totalCapacity && leftCapacity == section.leftCapacity
                 && name.equals(section.name);
+    }
+
+    @Override
+    public String toString() {
+        return "CourseSection{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", totalCapacity=" + totalCapacity +
+                ", leftCapacity=" + leftCapacity +
+                '}';
     }
 
     @Override

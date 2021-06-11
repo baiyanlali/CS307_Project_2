@@ -7,7 +7,9 @@ import cn.edu.sustech.cs307.dto.Instructor;
 
 import java.time.DayOfWeek;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Util {
@@ -56,7 +58,7 @@ public class Util {
                 weekOfList.add((short) (i + 1));
             }
         }
-        csc.weekList=weekOfList;
+        csc.weekList= new HashSet<>(weekOfList);
         csc.dayOfWeek= DayOfWeek.of(day_of_week);
 
         if(first_name!=null){
@@ -82,7 +84,12 @@ public class Util {
         int user_id=Integer.parseInt(strs[5]);
         String first_name=strs[6];
         String last_name=strs[7];
-        String location=strs[8];
+        String location="";
+        if(strs.length==9)
+            location=strs[8];
+        else
+            location="";
+
         return getCourseSectionClass(class_id,begin,end,week_list,day_of_week,user_id,first_name,last_name,location);
 
     }

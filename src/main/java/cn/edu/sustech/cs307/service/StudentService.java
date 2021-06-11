@@ -94,6 +94,9 @@ public interface StudentService {
     /**
      * Search available courses (' sections) for the specified student in the semester with extra conditions.
      * The result should be first sorted by course ID, and then sorted by course full name (course.name[section.name]).
+     * Ignore all course sections that have no sub-classes.
+     * Note: All ignore* arguments are about whether or not the result should ignore such cases.
+     * i.e. when ignoreFull is true, the result should filter out all sections that are full.
      *
      * @param studentId
      * @param semesterId
@@ -111,6 +114,7 @@ public interface StudentService {
      * @param ignoreFull                 whether or not to ignore full course sections.
      * @param ignoreConflict             whether or not to ignore course or time conflicting course sections.
      *                                   Note that a section is both course and time conflicting with itself.
+     *                                   See {@link cn.edu.sustech.cs307.dto.CourseSearchEntry#conflictCourseNames}
      * @param ignorePassed               whether or not to ignore the student's passed courses.
      * @param ignoreMissingPrerequisites whether or not to ignore courses with missing prerequisites.
      * @param pageSize                   the page size, effectively `limit pageSize`.
@@ -162,8 +166,10 @@ public interface StudentService {
      * prerequisite fulfillment check to directly enroll a student in a course
      * and assign him/her a grade.
      *
-     *If the scoring scheme of a course is one type in pass-or-fail and hundredmark grade,
+     * If the scoring scheme of a course is one type in pass-or-fail and hundredmark grade,
      * your system should not accept the other type of grade.
+     *
+     * Course section's left capacity should remain unchanged after this method.
      *
      * @param studentId
      * @param sectionId We will get the sectionId of one section first
@@ -173,7 +179,7 @@ public interface StudentService {
     void addEnrolledCourseWithGrade(int studentId, int sectionId, @Nullable Grade grade);
 
     /**
-     * For teachers who can give student a grade
+     * For teachers to give students grade.
      *
      * @param studentId student id is in database
      * @param sectionId section id in test cases that have selected by the student
@@ -214,7 +220,7 @@ public interface StudentService {
      *
      * @param studentId
      * @param courseId
-     * @return true if the student has any course score record that is passed (>=60 or PASS), which means he has passed the course.
+     * @return true if the student has passed the course's prerequisites (>=60 or PASS).
      */
     boolean passedPrerequisitesForCourse(int studentId, String courseId);
 
