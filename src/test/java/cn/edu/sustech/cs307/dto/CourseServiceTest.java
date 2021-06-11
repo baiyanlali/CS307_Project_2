@@ -38,8 +38,8 @@ public class CourseServiceTest {
 
 //        ms.removeMajor(12);
 
-        ms.addMajorCompulsoryCourse(11, "YSQ101");
-        ms.addMajorElectiveCourse(11, "MARS103");
+//        ss.addMajorCompulsoryCourse(11, "YSQ101");
+//        ss.addMajorElectiveCourse(11, "MARS103");
         CourseService cs=new ReferenceCourseService();
         cs.addCourse("PH101A", "小等物理上",4,64, Course.CourseGrading.HUNDRED_MARK_SCORE, null);
         cs.addCourse("PH101B", "小等物理下", 4, 64, Course.CourseGrading.HUNDRED_MARK_SCORE, null);

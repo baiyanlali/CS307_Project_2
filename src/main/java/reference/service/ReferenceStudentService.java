@@ -55,10 +55,26 @@ public class ReferenceStudentService implements StudentService {
             else stmt.setNull(3,Types.NULL);
 
             if(searchName!=null) {
-                String courseName = searchName.substring(0, searchName.indexOf('['));
-                String sectionName = searchName.substring(searchName.indexOf('[') + 1, searchName.lastIndexOf(']'));
-                stmt.setString(4, courseName);
-                stmt.setString(5, sectionName);
+                int first_index=searchName.indexOf('[');
+                //have section
+                if(first_index!=-1){
+                    String courseName = searchName.substring(0, first_index);
+                    int last_index = searchName.lastIndexOf(']');
+                    last_index=last_index==-1?searchName.length()-1:last_index;
+                    if(first_index==last_index){
+                        //判断[是否在searchName的结尾处
+                        stmt.setString(4,courseName);
+                        stmt.setNull(5,Types.NULL);
+                    }else{
+                        String sectionName = searchName.substring(first_index + 1,last_index );
+                        stmt.setString(4, courseName);
+                        stmt.setString(5, sectionName);
+                    }
+                }else{
+                    stmt.setString(4,searchName);
+                    stmt.setNull(5,Types.NULL);
+                }
+
             }else{
                 stmt.setNull(4, Types.NULL);
                 stmt.setNull(5, Types.NULL);
@@ -75,12 +91,21 @@ public class ReferenceStudentService implements StudentService {
             else   stmt.setNull(8,Types.NULL);
             if(searchClassLocations!=null){
                 StringBuffer location=new StringBuffer();
-                for (String s: searchClassLocations) {
-                    location.append(s);
-                    location.append(',');
+                for (int i = 0; i < searchClassLocations.size(); i++) {
+                    String s = searchClassLocations.get(i);
+                    s.trim();
+                    if(s.equals(""))continue;
+                    if(i==searchClassLocations.size()-1){
+                        location.append(String.format("\'%s\'",s));
+                    }else{
+                        location.append(String.format("\'%s\'",s));
+                        location.append(',');
+                    }
                 }
-                stmt.setString(9,location.toString());
-
+                if(location.toString().equals(""))
+                    stmt.setNull(9,Types.NULL);
+                else
+                    stmt.setString(9,location.toString());
             }else{
                 stmt.setNull(9,Types.NULL);
             }
@@ -143,43 +168,27 @@ public class ReferenceStudentService implements StudentService {
                     List<String> conflictedCourses=new ArrayList<>();
 
                     cse.sectionClasses=courseSectionClasses;
+                    Array arrs=rs.getArray("conflict_courses");
+                    if(arrs!=null){
+                        String[] strs = (String[]) arrs.getArray();
+                        if(strs!=null){
+                            conflictedCourses.addAll(Arrays.asList(strs));
+                        }
 
-                    conflictedCourses.addAll(Arrays.asList((String[]) rs.getArray("conflict_courses").getArray()));
-
-                    String[] classes = (String[])rs.getArray("class_info").getArray();
-                    for (String str:classes
-                         ) {
-                        courseSectionClasses.add(Util.getCourseSectionClass(str));
                     }
 
+                    String[] classes = (String[])rs.getArray("class_info").getArray();
+                    if(classes!=null){
+                        for (String str:classes) {
+                            courseSectionClasses.add(Util.getCourseSectionClass(str));
+                        }
+                    }
 
-//                int     class_id        =       rs.getInt(      "class_id");
-//                short   begin           =       rs.getShort(    "begin");
-//                short   end             =       rs.getShort(    "end");
-//                String  week_list       =       rs.getString(   "week_list");
-//                int     day_of_week     =       rs.getInt(      "day_of_week");
-//                int     user_id         =       rs.getInt(      "user_id");
-//                String  first_name      =       rs.getString(   "first_name");
-//                String  last_name       =       rs.getString(   "last_name");
-//                String  location        =       rs.getString(   "location");
-//                CourseSectionClass csc=Util.getCourseSectionClass(
-//                        class_id,
-//                        begin,
-//                        end,
-//                        week_list,
-//                        day_of_week,
-//                        user_id,
-//                        first_name,
-//                        last_name,
-//                        location
-//                );
-
-//                courseSectionClasses.add(csc);
             }
             //no need to throw exception
             return con;
         } catch (SQLException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
         return null;
     }
@@ -410,14 +419,15 @@ public class ReferenceStudentService implements StudentService {
                 entries[day].add(cte);
             }
             for(int i=0;i<7;i++){
-                DayOfWeek dow=DayOfWeek.of(i);
+                DayOfWeek dow=DayOfWeek.of(i+1);
                 mappp.put(dow,entries[i]);
             }
             ct.table=mappp;
             return ct;
         }catch (SQLException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
+
         return null;
     }
 
