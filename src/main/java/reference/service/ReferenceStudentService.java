@@ -319,6 +319,7 @@ public class ReferenceStudentService implements StudentService {
                 if(!success){
                     throw new IllegalStateException();
                 }
+                connection.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
