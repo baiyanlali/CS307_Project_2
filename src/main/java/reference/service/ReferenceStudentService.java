@@ -47,7 +47,7 @@ public class ReferenceStudentService implements StudentService {
             int pageIndex
     ) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("select * from super_search_course(?,?,?,?,?," +
+             PreparedStatement stmt = connection.prepareStatement("select * from super_super_search_course(?,?,?,?,?," +
                                                                                             "?,?,?,?,?," +
                                                                                             "?,?,?,?,?) ")) {
             stmt.setInt(    1, studentId);
@@ -314,18 +314,20 @@ public class ReferenceStudentService implements StudentService {
     @Override
     public void dropCourse(int studentId, int sectionId) throws IllegalStateException {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("select drop_course(?, ?) as success")) {
+             PreparedStatement stmt = connection.prepareStatement("select drop_course(?, ?)")) {
             stmt.setInt(1, studentId);
             stmt.setInt(2, sectionId);
             ResultSet rs = stmt.executeQuery();
             connection.close();
-            if(rs.next()){
-                boolean success=rs.getBoolean("success");
-                if(!success){
-                    throw new IllegalStateException();
-                }
-            }
+            // if(rs.next()){
+            //     boolean success=rs.getBoolean("success");
+            //     if(!success){
+            //         throw new IllegalStateException();
+            //     }
+            // }
+            
         } catch (SQLException e) {
+            throw new IllegalStateException();
             e.printStackTrace();
         }
     }
@@ -412,7 +414,8 @@ public class ReferenceStudentService implements StudentService {
                 rs.getString("grade");
                 a.put(c,g);
             }
-            return a;
+            Map.Entry[] entries=a.entrySet().toArray(Map.Entry[]::new);
+            return Map.ofEntries(entries);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -431,11 +434,10 @@ public class ReferenceStudentService implements StudentService {
 //            List<CourseTable.CourseTableEntry>[] entries=new List[7];
             Set<CourseTable.CourseTableEntry>[] entries=new Set[8];
             for (int i = 1; i <= 7; i++) {
-                entries[i]=new HashSet<CourseTable.CourseTableEntry>() {
-                };
+                entries[i]= new HashSet<>();
             }
             CourseTable ct=new CourseTable();
-            Map<DayOfWeek,Set<CourseTable.CourseTableEntry>> mappp=new HashMap<>();
+            Map<DayOfWeek,Set<CourseTable.CourseTableEntry>> mappp=new LinkedHashMap<>();
             while (rs.next()) {
                 String coursename = rs.getString("name");
                 Instructor ins=new Instructor();
@@ -457,10 +459,15 @@ public class ReferenceStudentService implements StudentService {
             }
             for(int i=0;i<7;i++){
                 DayOfWeek dow=DayOfWeek.of(i+1);
-//                mappp.put(dow,Collections.unmodifiableSet(entries[i+1]));
-                mappp.put(dow,Set.copyOf(Arrays.asList(entries[i].toArray(CourseTable.CourseTableEntry[]::new))));
+                mappp.put(dow,entries[i+1]);
+//                mappp.put(dow,Set.copyOf(Arrays.asList(entries[i+1].toArray(CourseTable.CourseTableEntry[]::new))));
             }
+//            ct.type="Immutable";
+//            ct.table=Map.copyOf(mappp);
+//            ct.table=Map.copyOf(mappp);
             ct.table=mappp;
+//            System.out.println(ct.table.getClass());
+//            ct.table=Map.ofEntries(Arrays.asList(mappp.entrySet().toArray(Map<DayOfWeek,Set< CourseTable.CourseTableEntry >>[]::new)));//Map.copyOf(mappp);
             return ct;
         }catch (SQLException e) {
             e.printStackTrace();

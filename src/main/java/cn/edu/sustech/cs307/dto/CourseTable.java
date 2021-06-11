@@ -40,6 +40,17 @@ public class CourseTable {
         }
 
         @Override
+        public String toString() {
+            return "CourseTableEntry{" +
+                    "courseFullName='" + courseFullName + '\'' +
+                    ", instructor=" + instructor +
+                    ", classBegin=" + classBegin +
+                    ", classEnd=" + classEnd +
+                    ", location='" + location + '\'' +
+                    '}';
+        }
+
+        @Override
         public int hashCode() {
             return Objects.hash(courseFullName, instructor, classBegin, classEnd, location);
         }
