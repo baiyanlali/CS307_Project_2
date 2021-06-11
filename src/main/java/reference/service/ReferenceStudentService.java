@@ -194,7 +194,6 @@ public class ReferenceStudentService implements StudentService {
                         location
                 );
 
-                assert courseSectionClasses != null;
                 courseSectionClasses.add(csc);
             }
             if(sec_id!=-1)
