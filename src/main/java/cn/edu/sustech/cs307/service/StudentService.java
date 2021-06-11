@@ -121,7 +121,7 @@ public interface StudentService {
      *                                   It is the number of {@link cn.edu.sustech.cs307.dto.CourseSearchEntry}
      * @param pageIndex                  the page index, effectively `offset pageIndex * pageSize`.
      *                                   If the page index is so large that there is no message,return an empty list
-     * @return a list of search entriess. See {@link cn.edu.sustech.cs307.dto.CourseSearchEntry}
+     * @return a list of search entries. See {@link cn.edu.sustech.cs307.dto.CourseSearchEntry}
      */
     List<CourseSearchEntry> searchCourse(int studentId, int semesterId, @Nullable String searchCid,
                                          @Nullable String searchName, @Nullable String searchInstructor,
