@@ -62,6 +62,9 @@ public class ReferenceStudentService implements StudentService {
                     searchName = searchName.replace("[","\\\\[");
                     searchName = searchName.replace("]","\\\\]");
                     searchName = searchName.replace("-","\\\\-");
+                    searchName = searchName.replace("+","\\\\+");
+                    searchName = searchName.replace("?","\\\\?");
+                    searchName = searchName.replace(".","\\\\.");
 //                    System.out.println(searchName);
                     stmt.setString(4,searchName);
                 }

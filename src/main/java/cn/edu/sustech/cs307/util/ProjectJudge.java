@@ -52,7 +52,13 @@ public final class ProjectJudge {
                     .collect(Collectors.toUnmodifiableList());
             result.elapsedTimeNs.addAndGet(System.nanoTime() - beforeTime);
             result.passCount.addAndGet(IntStream.range(0, searchCourseParams.size()).parallel()
-                    .filter(it -> searchCourseExpected.get(it).equals(searchCourseResult.get(it))).count());
+                    .filter(it -> {boolean istrue = searchCourseExpected.get(it).equals(searchCourseResult.get(it));
+                                    if(!istrue){
+                                        System.out.println(searchCourseExpected.get(it));
+                                        System.out.println(searchCourseResult.get(it));
+                                    }
+                                    return istrue;
+                                    }).count());
         }
         return result;
     }
