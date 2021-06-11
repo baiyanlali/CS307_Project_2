@@ -60,11 +60,11 @@ public class ReferenceSemesterService implements SemesterService {
                 sm.end=rs.getDate("sem_end");
                 con.add(sm);
             }
-            if(!con.isEmpty()){
+//            if(!con.isEmpty()){
                 return con;
-            }else{
-                throw new EntityNotFoundException();
-            }
+//            }else{
+//                throw new EntityNotFoundException();
+//            }
         } catch (SQLException e) {
             e.printStackTrace();
             return null;

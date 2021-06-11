@@ -8,6 +8,7 @@ import cn.edu.sustech.cs307.dto.Instructor;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Util {
@@ -56,7 +57,7 @@ public class Util {
                 weekOfList.add((short) (i + 1));
             }
         }
-        csc.weekList=weekOfList;
+        csc.weekList= (Set<Short>) weekOfList;
         csc.dayOfWeek= DayOfWeek.of(day_of_week);
 
         if(first_name!=null){

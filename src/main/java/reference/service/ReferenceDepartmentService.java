@@ -76,13 +76,14 @@ public class ReferenceDepartmentService implements DepartmentService {
                 departments.add(d);
 //                return rs.getInt("dept_id");
             }
-            if(departments.size()!=0)
+//            if(departments.size()!=0)
             return departments;
-            else throw new EntityNotFoundException();
+//            else throw new EntityNotFoundException();
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
+//        return null;
     }
 
     @Override

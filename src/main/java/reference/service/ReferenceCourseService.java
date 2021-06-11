@@ -12,8 +12,7 @@ import cn.edu.sustech.cs307.service.CourseService;
 import javax.annotation.Nullable;
 import java.sql.*;
 import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.*;
 
 public class ReferenceCourseService implements CourseService {
@@ -116,30 +115,53 @@ public class ReferenceCourseService implements CourseService {
         return -1;
     }
 
+    public Comparator<Short> cmp=new Comparator<Short>() {
+        @Override
+        public int compare(Short o1, Short o2) {
+            return o1-o2;
+        }
+    };
+
     @Override
-    public int addCourseSectionClass(int sectionId, int instructorId, DayOfWeek dayOfWeek, List<Short> weekList, short classStart, short classEnd, String location) {
-        try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("select add_class(?,?,?,?,?)")) {
+    public int addCourseSectionClass(int sectionId, int instructorId, DayOfWeek dayOfWeek, Set<Short> weekList, short classStart, short classEnd, String location) {
+        try (Connection connection = SQLDataSource.getInstance().getSQLConnection()) {
+            PreparedStatement stmt = connection.prepareStatement("select add_class(?,?,?,?,?,?,?)");
+
+
+            // parts to get week count
+            PreparedStatement myWeeks=connection.prepareStatement("select howmany_weeks(?)");
+            myWeeks.setInt(1,sectionId);
+            ResultSet weekRs=myWeeks.executeQuery();
+            int howManyWeeks=0;
+            if(weekRs.next()){
+                howManyWeeks=weekRs.getInt("howmany_weeks");
+            }
+
             stmt.setInt(1,sectionId);
-            stmt.setInt(2,dayOfWeek.getValue());
+            stmt.setInt(2,instructorId);
+            stmt.setInt(3,dayOfWeek.getValue());
             StringBuffer week=new StringBuffer();
+            ArrayList<Short> weekLists=new ArrayList<>(weekList);
+//            weekLists.addAll(Arrays.asList((Short[]) weekList.toArray()));
+            weekLists.sort(cmp);
+
             int index=0;
-            for (int i = 1; i <= weekList.get(weekList.size()-1); i++) {
-                if(i==weekList.get(index)){
+            for (int i = 1; i <= howManyWeeks; i++) {
+                if(index<weekLists.size() && i==weekLists.get(index)){  //protect the margin case
                     week.append(1);
                     index++;
                 }else{
                     week.append(0);
                 }
             }
-            stmt.setString(3,week.toString());
-            stmt.setInt(4,classStart);
-            stmt.setInt(5,classEnd);
+            stmt.setString(4,week.toString());
+            stmt.setInt(5,classStart);
+            stmt.setInt(6,classEnd);
 
-            stmt.setString(6,location);
+            stmt.setString(7,location);
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){
-                return rs.getInt("class_id");
+                return rs.getInt("add_class");
             }
         } catch (SQLException e) {
             e.printStackTrace();
