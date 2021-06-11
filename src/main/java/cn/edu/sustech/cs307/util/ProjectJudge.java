@@ -319,9 +319,9 @@ public final class ProjectJudge {
         endTimeNs = System.nanoTime();
         System.out.printf("Import student courses time: %.2fs\n", (endTimeNs - startTimeNs) / 1000000000.0);
         // 6. Try to drop graded course, test if throw IllegalStateException
-//        EvalResult dropCourse = testDropCourses(studentCourses);
-//        System.out.println("Test drop course: " + dropCourse.passCount.get());
-//        System.out.printf("Test drop course time: %.2fs\n", dropCourse.elapsedTimeNs.get() / 1000000000.0);
+        EvalResult dropCourse = testDropCourses(studentCourses);
+        System.out.println("Test drop course: " + dropCourse.passCount.get());
+        System.out.printf("Test drop course time: %.2fs\n", dropCourse.elapsedTimeNs.get() / 1000000000.0);
         // 7. Test courseTable2
         EvalResult courseTables2 = testCourseTables(courseTable2Dir);
         System.out.println("Test course table 2: " + courseTables2.passCount.get());
