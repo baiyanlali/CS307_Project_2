@@ -183,18 +183,20 @@ public class ReferenceStudentService implements StudentService {
 
     @Override
     public EnrollResult enrollCourse(int studentId, int sectionId) {
+        boolean judge=false;
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("select COURSE_FOUND(?) ")) {
-            boolean judge=false;
+             PreparedStatement stmt = connection.prepareStatement("select COURSE_FOUND(?) as judge")) {
             EnrollResult ans;
             stmt.setInt(1, sectionId);
             stmt.execute();
             ResultSet rs = stmt.executeQuery();
-            judge=rs.next();
-             if(!judge){
-                 ans=EnrollResult.COURSE_NOT_FOUND;
-                 return ans;
-             }
+            if(rs.next()) {
+                judge = rs.getBoolean("judge");
+                if (!judge) {
+                    ans = EnrollResult.COURSE_NOT_FOUND;
+                    return ans;
+                }
+            }
             PreparedStatement stmt2=connection.prepareStatement("select ALREADY_ENROLLED(?,?) as judge");
             stmt2.setInt(1, sectionId);
             stmt2.setInt(2, studentId);
@@ -261,10 +263,12 @@ public class ReferenceStudentService implements StudentService {
             stmt6.setInt(1, studentId);
             stmt6.setInt(2, sectionId);
             stmt6.execute();
+            ans=EnrollResult.SUCCESS;
+            return ans;
         } catch (SQLException e) {
             e.printStackTrace();
+            return EnrollResult.UNKNOWN_ERROR;
         }
-        return null;
     }
 
     @Override
@@ -360,7 +364,6 @@ public class ReferenceStudentService implements StudentService {
             while (rs.next()){
                 Course c=new Course();
                 Grade g=new HundredMarkGrade((short) 1);
-                //TODO:Complete it
                 rs.getInt("courseid");
                 rs.getString("grade");
                 a.put(c,g);
@@ -374,6 +377,7 @@ public class ReferenceStudentService implements StudentService {
 
     @Override
     public CourseTable getCourseTable(int studentId, Date date) {
+
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
              PreparedStatement stmt = connection.prepareStatement("call getCourseTable(?, ?)")) {
             stmt.setInt(1, studentId);
