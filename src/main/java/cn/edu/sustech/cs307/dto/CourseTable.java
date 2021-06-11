@@ -64,6 +64,13 @@ public class CourseTable {
     }
 
     @Override
+    public String toString() {
+        return "CourseTable{" +
+                "table=" + table +
+                '}';
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(table);
     }

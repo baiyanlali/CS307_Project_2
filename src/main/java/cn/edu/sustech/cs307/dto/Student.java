@@ -24,6 +24,16 @@ public class Student extends User {
     }
 
     @Override
+    public String toString() {
+        return "Student{" +
+                "enrolledDate=" + enrolledDate +
+                ", major=" + major +
+                ", id=" + id +
+                ", fullName='" + fullName + '\'' +
+                '}';
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), enrolledDate, major);
     }
