@@ -416,16 +416,16 @@ public class ReferenceStudentService implements StudentService {
             CourseTable ct=new CourseTable();
             Map<DayOfWeek,Set<CourseTable.CourseTableEntry>> mappp=new HashMap<>();
             while (rs.next()) {
-                String coursename = rs.getString("course_name");
+                String coursename = rs.getString("name");
                 Instructor ins=new Instructor();
-                String instructorName=rs.getString("Instructor");
-                int instructorId=rs.getInt("InstructorId");
+                String instructorName=rs.getString("instructor");
+                int instructorId=rs.getInt("instructorid");
                 ins.fullName=instructorName;
                 ins.id=instructorId;
-                int classbegin=rs.getInt("class_begin");
-                int classend=rs.getInt("class_end");
-                String location=rs.getString("loc");
-                int day=rs.getInt("day_of_week");
+                int classbegin=rs.getInt("classbegin1");
+                int classend=rs.getInt("classend1");
+                String location=rs.getString("location1");
+                int day=rs.getInt("dyofweek");
                 CourseTable.CourseTableEntry cte=new CourseTable.CourseTableEntry();
                 cte.courseFullName=coursename;
                 cte.instructor=ins;
