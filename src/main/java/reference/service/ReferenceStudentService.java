@@ -15,6 +15,7 @@ import java.sql.Date;
 import java.time.DayOfWeek;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -199,7 +200,8 @@ public class ReferenceStudentService implements StudentService {
                 courseSectionClasses.add(csc);
             }
             if(sec_id!=-1){
-                cse.sectionClasses=Collections.unmodifiableSet(courseSectionClasses);
+//                cse.sectionClasses=Collections.unmodifiableSet(courseSectionClasses);
+                cse.sectionClasses=Set.copyOf(Arrays.asList(courseSectionClasses.toArray(CourseSectionClass[]::new)));
                 con.add(cse);
             }
             //no need to throw exception
