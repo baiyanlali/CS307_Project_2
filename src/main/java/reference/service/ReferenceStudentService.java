@@ -130,7 +130,8 @@ public class ReferenceStudentService implements StudentService {
                 //start new value
                 if(sec_id!=rs.getInt("sec_id")) {
                     if(sec_id!=-1) {
-                        cse.sectionClasses=Collections.unmodifiableSet(courseSectionClasses);
+//                        cse.sectionClasses=Collections.unmodifiableSet(courseSectionClasses);
+                        cse.sectionClasses=Set.copyOf(Arrays.asList(courseSectionClasses.toArray(CourseSectionClass[]::new)));
                         con.add(cse);
                     }
                     cse = new CourseSearchEntry();
