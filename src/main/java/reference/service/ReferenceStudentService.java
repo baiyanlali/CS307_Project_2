@@ -104,8 +104,6 @@ public class ReferenceStudentService implements StudentService {
             }
             stmt.setInt(9,searchCourseType.ordinal());
 
-//            stmt.setString(8,);
-//            stmt.setBoolean(9,searchCourseType);
             stmt.setBoolean(10,ignoreConflict);
             stmt.setBoolean(11,ignoreFull);
             stmt.setBoolean(12,ignorePassed);
@@ -113,8 +111,11 @@ public class ReferenceStudentService implements StudentService {
             stmt.setInt(    14,pageSize);
             stmt.setInt(    15,pageIndex);
 
-
             ResultSet rs = stmt.executeQuery();
+
+
+
+            //CONVERT
 
             List<CourseSearchEntry> con=new ArrayList<>();
 
@@ -127,9 +128,10 @@ public class ReferenceStudentService implements StudentService {
             while (rs.next()){
                 //start new value
                 if(sec_id!=rs.getInt("sec_id")) {
-                    if(sec_id!=-1)
+                    if(sec_id!=-1) {
+                        cse.sectionClasses=Collections.unmodifiableSet(courseSectionClasses);
                         con.add(cse);
-
+                    }
                     cse = new CourseSearchEntry();
 
                     //Create Course
@@ -162,7 +164,7 @@ public class ReferenceStudentService implements StudentService {
 
                     List<String> conflictedCourses = new ArrayList<>();
 
-                    cse.sectionClasses = courseSectionClasses;
+//                    cse.sectionClasses = courseSectionClasses;
                     Array arrs = rs.getArray("conflict_courses");
                     if (arrs != null) {
                         String[] strs = (String[]) arrs.getArray();
@@ -196,8 +198,10 @@ public class ReferenceStudentService implements StudentService {
 
                 courseSectionClasses.add(csc);
             }
-            if(sec_id!=-1)
+            if(sec_id!=-1){
+                cse.sectionClasses=Collections.unmodifiableSet(courseSectionClasses);
                 con.add(cse);
+            }
             //no need to throw exception
             if(pageIndex*pageSize>=con.size()){
                 return new ArrayList<>();
@@ -441,7 +445,7 @@ public class ReferenceStudentService implements StudentService {
             }
             for(int i=0;i<7;i++){
                 DayOfWeek dow=DayOfWeek.of(i+1);
-                mappp.put(dow,entries[i+1]);
+                mappp.put(dow,Collections.unmodifiableSet(entries[i+1]));
             }
             ct.table=mappp;
             return ct;
