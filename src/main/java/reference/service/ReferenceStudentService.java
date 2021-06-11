@@ -403,7 +403,7 @@ public class ReferenceStudentService implements StudentService {
     @Override
     public CourseTable getCourseTable(int studentId, Date date) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("select getCourseTable(?, ?)")) {
+             PreparedStatement stmt = connection.prepareStatement("select * from getCourseTable(?, ?)")) {
             stmt.setInt(1, studentId);
             stmt.setDate(2, date);
             ResultSet rs = stmt.executeQuery();
