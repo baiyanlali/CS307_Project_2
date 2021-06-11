@@ -60,8 +60,8 @@ public final class ProjectJudge {
                                         sb.append("\nError with search course\n");
 
                                         int len=searchCourseResult.get(it).size();
-                                        sb.append("ENTRIES:\n\n");
-                                        sb.append("\nEXPECT:\n");
+                                        sb.append("ENTRIES:\n");
+                                        sb.append("EXPECT:\n");
                                         sb.append(searchCourseExpected.get(it));
                                         sb.append("\nMINE:\n");
                                         sb.append("\n");
