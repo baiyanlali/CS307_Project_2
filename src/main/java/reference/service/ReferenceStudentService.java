@@ -6,6 +6,7 @@ import cn.edu.sustech.cs307.dto.grade.Grade;
 import cn.edu.sustech.cs307.dto.grade.HundredMarkGrade;
 import cn.edu.sustech.cs307.dto.grade.PassOrFailGrade;
 import cn.edu.sustech.cs307.exception.EntityNotFoundException;
+import cn.edu.sustech.cs307.exception.IntegrityViolationException;
 import cn.edu.sustech.cs307.service.StudentService;
 
 import javax.annotation.Nullable;
@@ -25,6 +26,9 @@ public class ReferenceStudentService implements StudentService {
     public void addStudent(int userId, int majorId, String firstName, String lastName, Date enrolledDate) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
              PreparedStatement stmt = connection.prepareStatement("call addstudent(?,?,?,?,?) ")) {
+            if(userId<=0||majorId<=0||firstName==null||lastName==null||enrolledDate==null){
+                throw new IntegrityViolationException();
+            }
             stmt.setInt(1, userId);
             stmt.setInt(2, majorId);
             stmt.setString(3, firstName);
@@ -34,6 +38,7 @@ public class ReferenceStudentService implements StudentService {
             connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new IntegrityViolationException();
         }
     }
 
@@ -248,7 +253,7 @@ public class ReferenceStudentService implements StudentService {
                     return ans;
                 }
             }
-            PreparedStatement stmt3=connection.prepareStatement("select ALREADY_PASSED(?,?) as judge");
+            PreparedStatement stmt3=connection.prepareStatement("select ALREADY_PASSED_COURSE(?,?) as judge");
             stmt3.setInt(1, sectionId);
             stmt3.setInt(2, studentId);
             stmt3.execute();
@@ -409,9 +414,16 @@ public class ReferenceStudentService implements StudentService {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()){
                 Course c=new Course();
-                Grade g=new HundredMarkGrade((short) 1);
+                Grade g;
                 rs.getInt("courseid");
-                rs.getString("grade");
+                String k=rs.getString("grade");
+                if(k.equals("p")){
+                    g=PassOrFailGrade.PASS;
+                }else if(k.equals("f")){
+                    g=PassOrFailGrade.FAIL;
+                }else{
+                    g=new HundredMarkGrade(Short.parseShort(k));
+                }
                 a.put(c,g);
             }
             connection.close();
