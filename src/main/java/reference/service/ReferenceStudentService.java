@@ -327,7 +327,8 @@ public class ReferenceStudentService implements StudentService {
             // }
             
         } catch (SQLException e) {
-            e.printStackTrace();
+//            System.out.println(e.getSQLState());
+//            e.printStackTrace();
             throw new IllegalStateException();
         }
     }
@@ -426,7 +427,7 @@ public class ReferenceStudentService implements StudentService {
     public CourseTable getCourseTable(int studentId, Date date) {
 
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("select * from getCourseTable(?, ?)")) {
+             PreparedStatement stmt = connection.prepareStatement("select * from getcoursetable(?, ?)")) {
             stmt.setInt(1, studentId);
             stmt.setDate(2, date);
             ResultSet rs = stmt.executeQuery();
