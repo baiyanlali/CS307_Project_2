@@ -3,6 +3,7 @@ package reference.service;
 import cn.edu.sustech.cs307.database.SQLDataSource;
 import cn.edu.sustech.cs307.dto.Department;
 import cn.edu.sustech.cs307.exception.EntityNotFoundException;
+import cn.edu.sustech.cs307.exception.IntegrityViolationException;
 import cn.edu.sustech.cs307.service.DepartmentService;
 
 import java.sql.Connection;
@@ -22,6 +23,9 @@ public class ReferenceDepartmentService implements DepartmentService {
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){
                 int dept_id=rs.getInt("dept_id");
+                if(dept_id==-1){
+                    throw new IntegrityViolationException();
+                }
                 connection.close();
                 return dept_id;
             }

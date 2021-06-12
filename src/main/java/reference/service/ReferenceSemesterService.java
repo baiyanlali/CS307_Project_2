@@ -3,6 +3,7 @@ package reference.service;
 import cn.edu.sustech.cs307.database.SQLDataSource;
 import cn.edu.sustech.cs307.dto.Semester;
 import cn.edu.sustech.cs307.exception.EntityNotFoundException;
+import cn.edu.sustech.cs307.exception.IntegrityViolationException;
 import cn.edu.sustech.cs307.service.SemesterService;
 
 import java.sql.*;
@@ -20,18 +21,18 @@ public class ReferenceSemesterService implements SemesterService {
             stmt.setString(1,name);
             stmt.setDate(2,begin);
             stmt.setDate(3,end);
+                ResultSet rs = stmt.executeQuery();
+                if(rs.next()){
+                    int sem_id=rs.getInt("sem_id");
+                    connection.close();
+                    return sem_id;
+                }
 
-            ResultSet rs = stmt.executeQuery();
-
-            if(rs.next()){
-                int sem_id=rs.getInt("sem_id");
-                connection.close();
-                return sem_id;
-            }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new IntegrityViolationException();
         }
-        return -1;
+        throw new IntegrityViolationException();
     }
 
     @Override
