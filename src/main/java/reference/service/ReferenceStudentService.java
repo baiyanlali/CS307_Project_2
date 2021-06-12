@@ -414,9 +414,16 @@ public class ReferenceStudentService implements StudentService {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()){
                 Course c=new Course();
-                Grade g=new HundredMarkGrade((short) 1);
+                Grade g;
                 rs.getInt("courseid");
-                rs.getString("grade");
+                String k=rs.getString("grade");
+                if(k.equals("p")){
+                    g=PassOrFailGrade.PASS;
+                }else if(k.equals("f")){
+                    g=PassOrFailGrade.FAIL;
+                }else{
+                    g=new HundredMarkGrade(Short.parseShort(k));
+                }
                 a.put(c,g);
             }
             connection.close();
