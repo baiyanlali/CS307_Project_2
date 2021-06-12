@@ -6,6 +6,7 @@ import cn.edu.sustech.cs307.dto.grade.Grade;
 import cn.edu.sustech.cs307.dto.grade.HundredMarkGrade;
 import cn.edu.sustech.cs307.dto.grade.PassOrFailGrade;
 import cn.edu.sustech.cs307.exception.EntityNotFoundException;
+import cn.edu.sustech.cs307.exception.IntegrityViolationException;
 import cn.edu.sustech.cs307.service.StudentService;
 
 import javax.annotation.Nullable;
@@ -25,6 +26,9 @@ public class ReferenceStudentService implements StudentService {
     public void addStudent(int userId, int majorId, String firstName, String lastName, Date enrolledDate) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
              PreparedStatement stmt = connection.prepareStatement("call addstudent(?,?,?,?,?) ")) {
+            if(userId<=0||majorId<=0||firstName==null||lastName==null||enrolledDate==null){
+                throw new IntegrityViolationException();
+            }
             stmt.setInt(1, userId);
             stmt.setInt(2, majorId);
             stmt.setString(3, firstName);
@@ -34,6 +38,7 @@ public class ReferenceStudentService implements StudentService {
             connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new IntegrityViolationException();
         }
     }
 
