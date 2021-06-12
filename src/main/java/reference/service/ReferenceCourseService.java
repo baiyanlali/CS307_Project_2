@@ -108,8 +108,9 @@ public class ReferenceCourseService implements CourseService {
             stmt.setInt(4,totalCapacity);
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){
+                int sem_id=rs.getInt("sem_id");
                 connection.close();
-                return rs.getInt("sem_id");
+                return sem_id;
             }
             connection.close();
         } catch (SQLException e) {
@@ -165,10 +166,11 @@ public class ReferenceCourseService implements CourseService {
             stmt.setString(7,location);
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){
+                int add_class=rs.getInt("add_class");
                 connection.close();
-                return rs.getInt("add_class");
-            }
-            connection.close();
+                return add_class;
+            }else
+                connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
             return -1;

@@ -127,7 +127,6 @@ public class ReferenceStudentService implements StudentService {
             HashSet<CourseSectionClass> courseSectionClasses=null;
 
             int sec_id=-1;
-            connection.close();
             while (rs.next()){
                 //start new value
                 if(sec_id!=rs.getInt("sec_id")) {
@@ -207,6 +206,7 @@ public class ReferenceStudentService implements StudentService {
                 cse.sectionClasses=Set.copyOf(Arrays.asList(courseSectionClasses.toArray(CourseSectionClass[]::new)));
                 con.add(cse);
             }
+            connection.close();
             //no need to throw exception
             if(pageIndex*pageSize>=con.size()){
                 return new ArrayList<>();
@@ -327,8 +327,8 @@ public class ReferenceStudentService implements StudentService {
             // }
             
         } catch (SQLException e) {
-            throw new IllegalStateException();
             e.printStackTrace();
+            throw new IllegalStateException();
         }
     }
 
@@ -406,7 +406,6 @@ public class ReferenceStudentService implements StudentService {
                 stmt.setNull(2, Types.NULL);
             }
             ResultSet rs = stmt.executeQuery();
-            connection.close();
             while (rs.next()){
                 Course c=new Course();
                 Grade g=new HundredMarkGrade((short) 1);
@@ -414,6 +413,7 @@ public class ReferenceStudentService implements StudentService {
                 rs.getString("grade");
                 a.put(c,g);
             }
+            connection.close();
             Map.Entry[] entries=a.entrySet().toArray(Map.Entry[]::new);
             return Map.ofEntries(entries);
         } catch (SQLException e) {
@@ -430,7 +430,6 @@ public class ReferenceStudentService implements StudentService {
             stmt.setInt(1, studentId);
             stmt.setDate(2, date);
             ResultSet rs = stmt.executeQuery();
-            connection.close();
 //            List<CourseTable.CourseTableEntry>[] entries=new List[7];
             Set<CourseTable.CourseTableEntry>[] entries=new Set[8];
             for (int i = 1; i <= 7; i++) {
@@ -466,6 +465,7 @@ public class ReferenceStudentService implements StudentService {
 //            ct.table=Map.copyOf(mappp);
 //            ct.table=Map.copyOf(mappp);
             ct.table=mappp;
+            connection.close();
 //            System.out.println(ct.table.getClass());
 //            ct.table=Map.ofEntries(Arrays.asList(mappp.entrySet().toArray(Map<DayOfWeek,Set< CourseTable.CourseTableEntry >>[]::new)));//Map.copyOf(mappp);
             return ct;
@@ -486,17 +486,13 @@ public class ReferenceStudentService implements StudentService {
             stmt.setString(1, courseId);
             stmt.setInt(2, studentId);
             ResultSet rs = stmt.executeQuery();
-            connection.close();
             boolean result=false;
             if(rs.next()){
                 result=rs.getBoolean("check_pre");
             }
 
-            if(result){
-                return true;
-            }else {
-                return false;
-            }
+            connection.close();
+            return result;
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -518,7 +514,6 @@ public class ReferenceStudentService implements StudentService {
             stmt.setInt(1,studentId);
 
             ResultSet rs = stmt.executeQuery();
-            connection.close();
             if(rs.next()) {
                 Department d=new Department();
                 Major m=new Major();
@@ -527,8 +522,10 @@ public class ReferenceStudentService implements StudentService {
                 d.name=rs.getString("dept_name");
                 d.id=rs.getInt("dept_id");
                 m.department=d;
+                connection.close();
                 return m;
             }else{
+                connection.close();
                 throw new EntityNotFoundException();
             }
         } catch (SQLException e) {

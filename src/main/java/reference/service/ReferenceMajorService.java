@@ -23,9 +23,10 @@ public class ReferenceMajorService implements MajorService {
 
             ResultSet rs = stmt.executeQuery();
 
-            connection.close();
             if(rs.next()) {
-                return rs.getInt("add_major");
+                int add_major=rs.getInt("add_major");
+                connection.close();
+                return add_major;
             }
             return -1;
         } catch (SQLException e) {
@@ -87,7 +88,6 @@ public class ReferenceMajorService implements MajorService {
 
                 stmt.setInt(1, majorId);
                 ResultSet rs = stmt.executeQuery();
-                connection.close();
                 if (rs.next()) {
                     Major tm = new Major();
                     tm.id = rs.getInt("major_id");
@@ -97,6 +97,7 @@ public class ReferenceMajorService implements MajorService {
                     td.name = rs.getString("dept_name");
                     tm.department = td;
 
+                    connection.close();
                     return tm;
                 }else {
                     throw new EntityNotFoundException();

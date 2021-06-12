@@ -34,7 +34,6 @@ public class ReferenceUserService implements UserService {
 
             PreparedStatement stmt = connection.prepareStatement("select id,first_name,last_name,classified_as from users");
             ResultSet rs = stmt.executeQuery();
-            connection.close();
             List<User> users=new ArrayList<>();
             if(rs.next()){
                 User us;
@@ -52,6 +51,7 @@ public class ReferenceUserService implements UserService {
                 }
                 us.fullName=Util.getName(first_name,last_name);
                 us.id=rs.getInt("id");
+                connection.close();
                 users.add(us);
             }
 //            if(!users.isEmpty()){
@@ -72,7 +72,6 @@ public class ReferenceUserService implements UserService {
             PreparedStatement stmt = connection.prepareStatement("select id,first_name,last_name,classified_as from users where id=?");
             stmt.setInt(1,userId);
             ResultSet rs = stmt.executeQuery();
-            connection.close();
             if(rs.next()){
                 User us;
                 String first_name=rs.getString("first_name");
@@ -89,6 +88,7 @@ public class ReferenceUserService implements UserService {
                 }
                 us.fullName=Util.getName(first_name,last_name);
                 us.id=rs.getInt("id");
+                connection.close();
                 return us;
             }
         } catch (SQLException e) {
