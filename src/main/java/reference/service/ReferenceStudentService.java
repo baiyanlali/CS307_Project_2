@@ -47,7 +47,7 @@ public class ReferenceStudentService implements StudentService {
             int pageIndex
     ) {
         try (Connection connection = SQLDataSource.getInstance().getSQLConnection();
-             PreparedStatement stmt = connection.prepareStatement("select * from super_super_search_course(?,?,?,?,?," +
+             PreparedStatement stmt = connection.prepareStatement("select * from sfuper_super_search_course(?,?,?,?,?," +
                                                                                             "?,?,?,?,?," +
                                                                                             "?,?,?,?,?) ")) {
             stmt.setInt(    1, studentId);
