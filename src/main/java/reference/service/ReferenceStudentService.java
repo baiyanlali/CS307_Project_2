@@ -253,7 +253,7 @@ public class ReferenceStudentService implements StudentService {
                     return ans;
                 }
             }
-            PreparedStatement stmt3=connection.prepareStatement("select ALREADY_PASSED(?,?) as judge");
+            PreparedStatement stmt3=connection.prepareStatement("select ALREADY_PASSED_COURSE(?,?) as judge");
             stmt3.setInt(1, sectionId);
             stmt3.setInt(2, studentId);
             stmt3.execute();
