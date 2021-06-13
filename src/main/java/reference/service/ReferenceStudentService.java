@@ -432,8 +432,6 @@ public class ReferenceStudentService implements StudentService {
             e.printStackTrace();
 //            throw new IllegalStateException();
         }
-        connection.close();
-
 }
 
     @Override
