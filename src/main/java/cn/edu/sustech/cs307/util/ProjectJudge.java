@@ -201,7 +201,7 @@ public final class ProjectJudge {
                                                 sb.append("\n");
                                             }
                                         }
-//                                        System.out.println(sb);
+                                        System.out.println(sb);
                                     }
                                     return istrue;
                                     }).count());
