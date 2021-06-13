@@ -34,10 +34,121 @@ public final class ProjectJudge {
     private final SemesterService semesterService = serviceFactory.createService(SemesterService.class);
     private final StudentService studentService = serviceFactory.createService(StudentService.class);
     private final UserService userService = serviceFactory.createService(UserService.class);
+    private final DropService dropService = serviceFactory.createService(DropService.class);
     private final DataImporter importer = new DataImporter();
 
     private final List<CourseSearchEntry> errorCourseList = List.of(new CourseSearchEntry());
     private final CourseTable errorTable = new CourseTable();
+
+    public static void main(String[] args) {
+        ProjectJudge judge = new ProjectJudge();
+        judge.benchmark();
+    }
+
+    //start
+    public void benchmark() {
+//        if (!courseService.getAllCourses().isEmpty()
+//                || !departmentService.getAllDepartments().isEmpty()
+//                || !semesterService.getAllSemesters().isEmpty()
+//                || !userService.getAllUsers().isEmpty()) {
+//            System.out.println("Database is not empty! Trying to truncate all your tables.");
+//            try {
+//                courseService.getAllCourses().parallelStream().forEach(it -> courseService.removeCourse(it.id));
+//                departmentService.getAllDepartments().parallelStream()
+//                        .forEach(it -> departmentService.removeDepartment(it.id));
+//                semesterService.getAllSemesters().parallelStream().forEach(it -> semesterService.removeSemester(it.id));
+//                userService.getAllUsers().parallelStream().forEach(it -> userService.removeUser(it.id));
+//            } catch (Throwable t) {
+//                System.out.println("Failed to truncate database.");
+//                t.printStackTrace();
+//                System.exit(1);
+//            }
+//        }
+
+        //0. Drop tables
+        dropService.dropTables();
+
+        // 1. Import everything other than studentCourses.json
+        List<Department> departments = readValueFromFile("departments.json", List.class);
+        List<Major> majors = readValueFromFile("majors.json", List.class);
+        List<User> users = readValueFromFile("users.json", List.class);
+        List<Semester> semesters = readValueFromFile("semesters.json", List.class);
+        List<Course> courses = readValueFromFile("courses.json", List.class);
+        Map<String, List<String>> majorCompulsoryCourses = readValueFromFile("majorCompulsoryCourses.json", Map.class);
+        Map<String, List<String>> majorElectiveCourses = readValueFromFile("majorElectiveCourses.json", Map.class);
+        Map<String, Prerequisite> coursePrerequisites = readValueFromFile("coursePrerequisites.json", Map.class);
+        Map<String, Map<String, List<CourseSection>>> sections = readValueFromFile("courseSections.json", Map.class);
+        Map<String, List<CourseSectionClass>> classes = readValueFromFile("courseSectionClasses.json", Map.class);
+        Map<String, Map<String, Grade>> studentCourses = readValueFromFile("studentCourses.json", Map.class);
+        long startTimeNs, endTimeNs;
+        startTimeNs = System.nanoTime();
+        System.out.println("Import departments");
+        importer.importDepartments(departments);
+        System.out.println("Import majors");
+        importer.importMajors(majors);
+        System.out.println("Import users");
+        importer.importUsers(users);
+        System.out.println("Import semesters");
+        importer.importSemesters(semesters);
+        System.out.println("Import courses");
+        importer.importCourses(courses, coursePrerequisites);
+        System.out.println("Import sections");
+        importer.importCourseSection(sections);
+        System.out.println("Import classes");
+        importer.importCourseSectionClasses(classes);
+        System.out.println("Import major courses");
+        importer.importMajorCompulsoryCourses(majorCompulsoryCourses);
+        importer.importMajorElectiveCourses(majorElectiveCourses);
+        endTimeNs = System.nanoTime();
+        System.out.printf("Import time usage: %.2fs\n", (endTimeNs - startTimeNs) / 1000000000.0);
+
+        // 2. Test searchCourse1
+        EvalResult searchCourse1 = testSearchCourses(searchCourse1Dir);
+        System.out.println("Test search course 1: " + searchCourse1.passCount.get());
+        System.out.printf("Test search course 1 time: %.2fs\n", searchCourse1.elapsedTimeNs.get() / 1000000000.0);
+
+        // 3. Test enrollCourse1
+        EnrollEvalResult enrollCourse1 = testEnrollCourses(enrollCourse1Dir);
+        System.out.println("Test enroll course 1: " + enrollCourse1.passCount.get());
+        System.out.printf("Test enroll course 1 time: %.2fs\n", enrollCourse1.elapsedTimeNs.get() / 1000000000.0);
+
+        // 4. Drop all success course
+        EvalResult dropEnrolledCourse1 = testDropEnrolledCourses(enrollCourse1);
+        System.out.println("Test drop enrolled course 1: " + dropEnrolledCourse1.passCount.get());
+        System.out.printf("Test drop enrolled course 1 time: %.2fs\n",
+                dropEnrolledCourse1.elapsedTimeNs.get() / 1000000000.0);
+
+        // 5. Import studentCourses.json
+        startTimeNs = System.nanoTime();
+        System.out.println("Import student courses");
+        importer.importStudentCourses(studentCourses);
+        endTimeNs = System.nanoTime();
+        System.out.printf("Import student courses time: %.2fs\n", (endTimeNs - startTimeNs) / 1000000000.0);
+
+        // 6. Try to drop graded course, test if throw IllegalStateException
+        EvalResult dropCourse = testDropCourses(studentCourses);
+        System.out.println("Test drop course: " + dropCourse.passCount.get());
+        System.out.printf("Test drop course time: %.2fs\n", dropCourse.elapsedTimeNs.get() / 1000000000.0);
+
+        // 7. Test courseTable2
+        EvalResult courseTables2 = testCourseTables(courseTable2Dir);
+        System.out.println("Test course table 2: " + courseTables2.passCount.get());
+        System.out.printf("Test course table 2 time: %.2fs\n", courseTables2.elapsedTimeNs.get() / 1000000000.0);
+
+        // 8. Test searchCourse2
+        EvalResult searchCourse2 = testSearchCourses(searchCourse2Dir);
+        System.out.println("Test search course 2: " + searchCourse2.passCount.get());
+        System.out.printf("Test search course 2 time: %.2fs\n", searchCourse2.elapsedTimeNs.get() / 1000000000.0);
+
+        // 9. Test enrollCourse2
+        EnrollEvalResult enrollCourse2 = testEnrollCourses(enrollCourse2Dir);
+        System.out.println("Test enroll course 2: " + enrollCourse2.passCount.get());
+        System.out.printf("Test enroll course 2 time: %.2fs\n", courseTables2.elapsedTimeNs.get() / 1000000000.0);
+
+        // TODO: Multi-threaded benchmark
+
+    }
+
 
     public EvalResult testSearchCourses(File searchCourseDir) {
         EvalResult result = new EvalResult();
@@ -245,104 +356,9 @@ public final class ProjectJudge {
         }
     }
 
-    public void benchmark() {
-        if (!courseService.getAllCourses().isEmpty()
-                || !departmentService.getAllDepartments().isEmpty()
-                || !semesterService.getAllSemesters().isEmpty()
-                || !userService.getAllUsers().isEmpty()) {
-            System.out.println("Database is not empty! Trying to truncate all your tables.");
-            try {
-                courseService.getAllCourses().parallelStream().forEach(it -> courseService.removeCourse(it.id));
-                departmentService.getAllDepartments().parallelStream()
-                        .forEach(it -> departmentService.removeDepartment(it.id));
-                semesterService.getAllSemesters().parallelStream().forEach(it -> semesterService.removeSemester(it.id));
-                userService.getAllUsers().parallelStream().forEach(it -> userService.removeUser(it.id));
-            } catch (Throwable t) {
-                System.out.println("Failed to truncate database.");
-                t.printStackTrace();
-                System.exit(1);
-            }
-        }
 
-        // 1. Import everything other than studentCourses.json
-        List<Department> departments = readValueFromFile("departments.json", List.class);
-        List<Major> majors = readValueFromFile("majors.json", List.class);
-        List<User> users = readValueFromFile("users.json", List.class);
-        List<Semester> semesters = readValueFromFile("semesters.json", List.class);
-        List<Course> courses = readValueFromFile("courses.json", List.class);
-        Map<String, List<String>> majorCompulsoryCourses = readValueFromFile("majorCompulsoryCourses.json", Map.class);
-        Map<String, List<String>> majorElectiveCourses = readValueFromFile("majorElectiveCourses.json", Map.class);
-        Map<String, Prerequisite> coursePrerequisites = readValueFromFile("coursePrerequisites.json", Map.class);
-        Map<String, Map<String, List<CourseSection>>> sections = readValueFromFile("courseSections.json", Map.class);
-        Map<String, List<CourseSectionClass>> classes = readValueFromFile("courseSectionClasses.json", Map.class);
-        Map<String, Map<String, Grade>> studentCourses = readValueFromFile("studentCourses.json", Map.class);
-        long startTimeNs, endTimeNs;
-        startTimeNs = System.nanoTime();
-        System.out.println("Import departments");
-        importer.importDepartments(departments);
-        System.out.println("Import majors");
-        importer.importMajors(majors);
-        System.out.println("Import users");
-        importer.importUsers(users);
-        System.out.println("Import semesters");
-        importer.importSemesters(semesters);
-        System.out.println("Import courses");
-        importer.importCourses(courses, coursePrerequisites);
-        System.out.println("Import sections");
-        importer.importCourseSection(sections);
-        System.out.println("Import classes");
-        importer.importCourseSectionClasses(classes);
-        System.out.println("Import major courses");
-        importer.importMajorCompulsoryCourses(majorCompulsoryCourses);
-        importer.importMajorElectiveCourses(majorElectiveCourses);
-        endTimeNs = System.nanoTime();
-        System.out.printf("Import time usage: %.2fs\n", (endTimeNs - startTimeNs) / 1000000000.0);
-        // 2. Test searchCourse1
-        EvalResult searchCourse1 = testSearchCourses(searchCourse1Dir);
-        System.out.println("Test search course 1: " + searchCourse1.passCount.get());
-        System.out.printf("Test search course 1 time: %.2fs\n", searchCourse1.elapsedTimeNs.get() / 1000000000.0);
-        // 3. Test enrollCourse1
-        EnrollEvalResult enrollCourse1 = testEnrollCourses(enrollCourse1Dir);
-        System.out.println("Test enroll course 1: " + enrollCourse1.passCount.get());
-        System.out.printf("Test enroll course 1 time: %.2fs\n", enrollCourse1.elapsedTimeNs.get() / 1000000000.0);
-        // 4. Drop all success course
 
-        EvalResult dropEnrolledCourse1 = testDropEnrolledCourses(enrollCourse1);
-        System.out.println("Test drop enrolled course 1: " + dropEnrolledCourse1.passCount.get());
-        System.out.printf("Test drop enrolled course 1 time: %.2fs\n",
-                dropEnrolledCourse1.elapsedTimeNs.get() / 1000000000.0);
 
-        // 5. Import studentCourses.json
-        startTimeNs = System.nanoTime();
-        System.out.println("Import student courses");
-        importer.importStudentCourses(studentCourses);
-        endTimeNs = System.nanoTime();
-        System.out.printf("Import student courses time: %.2fs\n", (endTimeNs - startTimeNs) / 1000000000.0);
-        // 6. Try to drop graded course, test if throw IllegalStateException
-        EvalResult dropCourse = testDropCourses(studentCourses);
-        System.out.println("Test drop course: " + dropCourse.passCount.get());
-        System.out.printf("Test drop course time: %.2fs\n", dropCourse.elapsedTimeNs.get() / 1000000000.0);
-        // 7. Test courseTable2
-        EvalResult courseTables2 = testCourseTables(courseTable2Dir);
-        System.out.println("Test course table 2: " + courseTables2.passCount.get());
-        System.out.printf("Test course table 2 time: %.2fs\n", courseTables2.elapsedTimeNs.get() / 1000000000.0);
-        // 8. Test searchCourse2
-        EvalResult searchCourse2 = testSearchCourses(searchCourse2Dir);
-        System.out.println("Test search course 2: " + searchCourse2.passCount.get());
-        System.out.printf("Test search course 2 time: %.2fs\n", searchCourse2.elapsedTimeNs.get() / 1000000000.0);
-        // 9. Test enrollCourse2
-        EnrollEvalResult enrollCourse2 = testEnrollCourses(enrollCourse2Dir);
-        System.out.println("Test enroll course 2: " + enrollCourse2.passCount.get());
-        System.out.printf("Test enroll course 2 time: %.2fs\n", courseTables2.elapsedTimeNs.get() / 1000000000.0);
-
-        // TODO: Multi-threaded benchmark
-
-    }
-
-    public static void main(String[] args) {
-        ProjectJudge judge = new ProjectJudge();
-        judge.benchmark();
-    }
 
     private static <T> T readValueFromFile(File file, Class<T> tClass) {
         ObjectMapper objectMapper = new ObjectMapper();

@@ -6,6 +6,7 @@ import reference.service.*;
 
 public class ReferenceServiceFactory extends ServiceFactory {
     public ReferenceServiceFactory(){
+        registerService(DropService.class,new ReferenceDropService());
         registerService(CourseService.class,new ReferenceCourseService());
         registerService(DepartmentService.class,new ReferenceDepartmentService());
         registerService(InstructorService.class,new ReferenceInstructorService());
