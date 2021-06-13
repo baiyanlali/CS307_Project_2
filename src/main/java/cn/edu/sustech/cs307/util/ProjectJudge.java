@@ -67,6 +67,7 @@ public final class ProjectJudge {
 
         //0. Drop tables
         dropService.dropTables();
+        System.out.println("Complete Clear Tables");
 
         // 1. Import everything other than studentCourses.json
         List<Department> departments = readValueFromFile("departments.json", List.class);
