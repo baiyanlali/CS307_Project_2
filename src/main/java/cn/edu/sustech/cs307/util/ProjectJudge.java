@@ -248,6 +248,12 @@ public final class ProjectJudge {
                 evalResult.elapsedTimeNs.addAndGet(System.nanoTime() - beforeTime);
                 if (expected == result) {
                     evalResult.passCount.incrementAndGet();
+                }else{
+                        System.out.println();
+                        System.out.println("No."+i+" Wrong: Parameters=");
+                        System.out.println(enrollCourseParams.get(i).get(0)+","+importer.mapSectionId(enrollCourseParams.get(i).get(1)));
+                        System.out.println("Result="+result);
+                        System.out.println("Expect="+expected);
                 }
                 if (expected == StudentService.EnrollResult.SUCCESS) {
                     evalResult.succeedSections.add(enrollCourseParams.get(i));
@@ -297,9 +303,9 @@ public final class ProjectJudge {
                         boolean istrue = courseTableExpected.get(it).equals(courseTableResults.get(it));
                         if(!istrue){
                             StringBuilder sb=new StringBuilder();
-                            sb.append("FAULT:\n\n");
+                            sb.append("\nFAULT:\n");
                             sb.append("PARAMETER:\n");
-                            sb.append(courseTableParams.get(it));
+                            sb.append(courseTableParams.get(it).get(0)+","+LocalDate.ofEpochDay(courseTableParams.get(it).get(1)));
                             sb.append("\n");
                             sb.append("EXPECTED:\n");
                             sb.append(courseTableExpected.get(it));
@@ -307,12 +313,7 @@ public final class ProjectJudge {
                             sb.append("RESULTS:\n");
                             sb.append(courseTableResults.get(it));
                             sb.append("\n");
-                            sb.append(courseTableExpected.get(it).table.getClass().equals(courseTableResults.get(it).table.getClass()));
-                            sb.append("\n");
-                            sb.append(courseTableExpected.get(it).table.getClass());
-                            sb.append("\n");
-                            sb.append(courseTableResults.get(it).table.getClass());
-//                            System.out.println(sb);
+                            System.out.println(sb);
                         }
                         return istrue;
                     }).count());

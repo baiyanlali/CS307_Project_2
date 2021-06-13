@@ -1,5 +1,7 @@
 package cn.edu.sustech.cs307.dto;
 
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 import java.time.DayOfWeek;
 import java.util.Map;
 import java.util.Objects;
@@ -39,15 +41,21 @@ public class CourseTable {
                     && instructor.equals(entry.instructor) && location.equals(entry.location);
         }
 
+//        @Override
+//        public String toString() {
+//            return "CourseTableEntry{" +
+//                    "courseFullName='" + courseFullName + '\'' +
+//                    ", instructor=" + instructor +
+//                    ", classBegin=" + classBegin +
+//                    ", classEnd=" + classEnd +
+//                    ", location='" + location + '\'' +
+//                    '}';
+//        }
+
+
         @Override
         public String toString() {
-            return "CourseTableEntry{" +
-                    "courseFullName='" + courseFullName + '\'' +
-                    ", instructor=" + instructor +
-                    ", classBegin=" + classBegin +
-                    ", classEnd=" + classEnd +
-                    ", location='" + location + '\'' +
-                    '}';
+            return courseFullName;
         }
 
         @Override
